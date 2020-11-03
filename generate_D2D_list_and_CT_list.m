@@ -1,7 +1,8 @@
 %saves 2 lists mapped to grid
 clc;clear;close all;format compact;
 
-Cell_Radius = 150;
+N=30;
+Cell_Radius = 110;
 D2D_Sep_Max = 0.1*Cell_Radius;
 Max_Users = 50;
 CUE_SINR_min_dB	= 33; 
@@ -11,7 +12,7 @@ DUE_SINR_min = db2pow(DUE_SINR_min_dB);
 eNB1_x = -272; eNB1_y = -645;  %BSs in blue area
 eNB2_x = -374; eNB2_y = -809;
 eNB3_x = -491; eNB3_y = -662;
-grid_Kazan=xlsread('Points2.xlsx');
+grid_Kazan=xlsread('Points.xlsx');
     eNB_img_x=-384; eNB_img_y = -697; 
     Cell_Radius_img= 210;
     Max_Users_single = 100;
@@ -31,10 +32,33 @@ end %D2D_user_list_all_mapped_1col -> OFDMPlanning to get Loss
 [CUE3_x, CUE3_y] = generate_CT(eNB3_x,eNB3_y,Cell_Radius);
 CT_user_list_all=[CUE1_x,CUE1_y;CUE2_x,CUE2_y;CUE3_x,CUE3_y];
 [CT_user_list_all_mapped,grid_Kazan_upd] = mapping_to_grid(grid_Kazan_upd,CT_user_list_all);
+grid_Kazan_for_CTs=readtable('C:\Users\Xiaomi\Documents\YASMP\ARP\codes\Points.xlsx', 'Sheet', 7);%2:-79,4:-106,5:-70
+grid_Kazan_for_CTs=table2array(grid_Kazan_for_CTs);
 
-% save('C:\Users\Xiaomi\Documents\YASMP\ARP\codes\case3\D2D_user_list_all_mapped.mat','D2D_user_list_all_mapped');
-% save('C:\Users\Xiaomi\Documents\YASMP\ARP\codes\case3\CT_user_list_all_mapped.mat','CT_user_list_all_mapped'); 
-% save('C:\Users\Xiaomi\Documents\YASMP\ARP\codes\case3\D2D_user_list_all_mapped_1col.mat','D2D_user_list_all_mapped_1col');
+    figure
+    axis ([-650 -50 -1025 -425]);
+    axis square
+    grid on;
+    scatter(grid_Kazan_for_CTs(:,1),grid_Kazan_for_CTs(:,2),1,'MarkerEdgeAlpha',.2,'HandleVisibility','off');
+    hold on;
+    scatter(CT_user_list_all_mapped(:,1),CT_user_list_all_mapped(:,2),'r','filled','d');
+    hold on;
+    [CT_user_list_all_mapped,~] = mapping_to_grid(grid_Kazan_for_CTs,CT_user_list_all_mapped); %remap
+    scatter(CT_user_list_all_mapped(:,1),CT_user_list_all_mapped(:,2),'g','filled','d');
+    title('CT SNR map');
+    scatter(eNB1_x,eNB1_y,'k','filled');
+    scatter(eNB2_x,eNB2_y,'k','filled');
+    scatter(eNB3_x,eNB3_y,'k','filled');
+
+
+user_list=[CT_user_list_all_mapped;D2D_user_list_all_mapped_1col];
+t1='C:\Users\Xiaomi\Documents\YASMP\ARP\codes\cases\case';
+t2='\D2D_user_list_all_mapped.mat';
+save(strcat(t1,num2str(N),t2),'D2D_user_list_all_mapped');
+t2='\CT_user_list_all_mapped.mat';
+save(strcat(t1,num2str(N),t2),'CT_user_list_all_mapped'); 
+t2='\user_list.mat';
+save(strcat(t1,num2str(N),t2),'user_list');
 
 function [user_list_mapped,grid]= mapping_to_grid (grid, user_list)
     if (isempty(user_list))

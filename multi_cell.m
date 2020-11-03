@@ -20,7 +20,7 @@ dB_value_grid=[33]; % CT SINR th, level of forb reg harshness
 DUE_SINR_min_dB	= 46; %DT SINR th     6/15 ARP, 30/46 opt
 for dB_value=[dB_value_grid] %-not used- loop over different SINR thresholds
     
-no_runs=1;
+no_runs=5;
 for n=1:no_runs
     to_disp=['iteration # ',num2str(n)];
     disp(to_disp);
@@ -53,19 +53,19 @@ for n=1:no_runs
     [CUE3_x, CUE3_y] = generate_CT(eNB3_x,eNB3_y,Cell_Radius);
     %choose D2D pairs within single cell 
     [rank_PRS1,N_selected_PRS1,rank_AOS1,N_selected_AOS1]=single_cell_PRS_AOS(D2D_user_list1,eNB1_x,eNB1_y,CUE1_x,CUE1_y,Max_Users,Cell_Radius);
-    [PC_user_list1,N_selected_PC1]=single_cell_PC_Abu_channel(D2D_user_list1,eNB1_x,eNB1_y,CUE1_x, CUE1_y); %PC - power control, choose best pairs according to their SINR
+%     [PC_user_list1,N_selected_PC1]=single_cell_PC_Abu_channel(D2D_user_list1,eNB1_x,eNB1_y,CUE1_x, CUE1_y); %PC - power control, choose best pairs according to their SINR
     disp('# of selected pairs (PRS/AOS/PC) in cell 1 = ');
-    to_disp=[num2str(N_selected_PRS1),'/',num2str(N_selected_AOS1),'/',num2str(N_selected_PC1)];
+    to_disp=[num2str(N_selected_PRS1),'/',num2str(N_selected_AOS1)];
     disp(to_disp);
     [rank_PRS2,N_selected_PRS2,rank_AOS2,N_selected_AOS2]=single_cell_PRS_AOS(D2D_user_list2,eNB2_x,eNB2_y,CUE2_x,CUE2_y,Max_Users,Cell_Radius); 
-    [PC_user_list2,N_selected_PC2]=single_cell_PC_Abu_channel(D2D_user_list2,eNB2_x,eNB2_y,CUE2_x, CUE2_y);
+%     [PC_user_list2,N_selected_PC2]=single_cell_PC_Abu_channel(D2D_user_list2,eNB2_x,eNB2_y,CUE2_x, CUE2_y);
     disp('# of selected pairs (PRS/AOS/PC) in cell 2 = ');
-    to_disp=[num2str(N_selected_PRS2),'/',num2str(N_selected_AOS2),'/',num2str(N_selected_PC2)];
+    to_disp=[num2str(N_selected_PRS2),'/',num2str(N_selected_AOS2)];
     disp(to_disp);
     [rank_PRS3,N_selected_PRS3,rank_AOS3,N_selected_AOS3]=single_cell_PRS_AOS(D2D_user_list3,eNB3_x,eNB3_y,CUE3_x,CUE3_y,Max_Users,Cell_Radius); 
-    [PC_user_list3,N_selected_PC3]=single_cell_PC_Abu_channel(D2D_user_list3,eNB3_x,eNB3_y,CUE3_x, CUE3_y);
+%     [PC_user_list3,N_selected_PC3]=single_cell_PC_Abu_channel(D2D_user_list3,eNB3_x,eNB3_y,CUE3_x, CUE3_y);
     disp('# of selected pairs (PRS/AOS/PC) in cell 3 = ');
-    to_disp=[num2str(N_selected_PRS3),'/',num2str(N_selected_AOS3),'/',num2str(N_selected_PC3)];
+    to_disp=[num2str(N_selected_PRS3),'/',num2str(N_selected_AOS3)];
     disp(to_disp);
 
     PRS_user_list1 = mask (D2D_user_list1,rank_PRS1); % PRS/AOS/PC uses its own SINR CT & DT thresholds (6&15)
@@ -86,7 +86,7 @@ for n=1:no_runs
     [min_index32] = closest_pair_to_CT (PRS_user_list3,CUE2_x,CUE2_y);
 
     %CT forbidden region calculation 
-    disp('--------PRS--------');
+    disp('--------multi-cell PRS--------');
     disp ' '; disp('CT check, cell 1 to 2:');
     [PRS_user_list1_upd,min_index12,min_index13] = forbidden_region_CUE (PRS_user_list1, min_index12,CUE2_x, ...
                                                         CUE2_y,eNB2_x,eNB2_y,CUE_SINR_min,CUE_Exp,CUE3_x,CUE3_y); 
@@ -128,7 +128,7 @@ for n=1:no_runs
     [min_index32] = closest_pair_to_CT (AOS_user_list3,CUE2_x,CUE2_y);
 
     %CT forbidden region calculation 
-    disp('--------AOS--------');
+    disp('--------multi-cell AOS--------');
     disp ' '; disp('CT check, cell 1 to 2:');
     [AOS_user_list1_upd,min_index12,min_index13] = forbidden_region_CUE (AOS_user_list1, min_index12,CUE2_x, ...
                                                         CUE2_y,eNB2_x,eNB2_y,CUE_SINR_min,CUE_Exp,CUE3_x,CUE3_y); 
@@ -160,48 +160,48 @@ for n=1:no_runs
     [AOS_user_list3_upd,min_index31,min_index32] = forbidden_region_DUE (AOS_user_list3_upd, min_index31, ...
                                                         AOS_user_list1_upd, min_index13,DUE_SINR_min,DUE_Exp, ...
                                                                         AOS_user_list2_upd); 
-    %% -------------PC-----------------------
-    %calculation of closest pair to the border
-    [min_index12] = closest_pair_to_CT (PC_user_list1,CUE2_x,CUE2_y);
-    [min_index13] = closest_pair_to_CT (PC_user_list1,CUE3_x,CUE3_y);
-    [min_index21] = closest_pair_to_CT (PC_user_list2,CUE1_x,CUE1_y);
-    [min_index23] = closest_pair_to_CT (PC_user_list2,CUE3_x,CUE3_y);
-    [min_index31] = closest_pair_to_CT (PC_user_list3,CUE1_x,CUE1_y);
-    [min_index32] = closest_pair_to_CT (PC_user_list3,CUE2_x,CUE2_y);
-
-    %CT forbidden region calculation 
-    disp('--------PC--------');
-    disp ' '; disp('CT check, cell 1 to 2:');
-    [PC_user_list1_upd,min_index12,min_index13] = forbidden_region_CUE (PC_user_list1, min_index12,CUE2_x, ...
-                                                        CUE2_y,eNB2_x,eNB2_y,CUE_SINR_min,CUE_Exp,CUE3_x,CUE3_y); 
-    disp ' '; disp('CT check, cell 1 to 3:');                                                
-    [PC_user_list1_upd,min_index13,min_index12] = forbidden_region_CUE (PC_user_list1_upd, min_index13,CUE3_x, ...
-                                                        CUE3_y,eNB3_x,eNB3_y,CUE_SINR_min,CUE_Exp,CUE2_x,CUE2_y); 
-    disp ' '; disp('CT check, cell 2 to 1:');                                                
-    [PC_user_list2_upd,min_index21,min_index23] = forbidden_region_CUE (PC_user_list2, min_index21,CUE1_x, ...
-                                                        CUE1_y,eNB1_x,eNB1_y,CUE_SINR_min,CUE_Exp,CUE3_x,CUE3_y);
-    disp ' '; disp('CT check, cell 2 to 3:');                                                
-    [PC_user_list2_upd,min_index23,min_index21] = forbidden_region_CUE (PC_user_list2_upd, min_index23,CUE3_x, ...
-                                                        CUE3_y,eNB3_x,eNB3_y,CUE_SINR_min,CUE_Exp,CUE1_x,CUE1_y); 
-    disp ' '; disp('CT check, cell 3 to 1:');                                                
-    [PC_user_list3_upd,min_index31,min_index32] = forbidden_region_CUE (PC_user_list3, min_index31,CUE1_x, ...
-                                                        CUE1_y,eNB1_x,eNB1_y,CUE_SINR_min,CUE_Exp,CUE2_x,CUE2_y);
-    disp ' '; disp('CT check, cell 3 to 2:');                                                
-    [PC_user_list3_upd,min_index32,min_index31] = forbidden_region_CUE (PC_user_list3_upd, min_index32,CUE2_x, ...
-                                                        CUE2_y,eNB2_x,eNB2_y,CUE_SINR_min,CUE_Exp,CUE1_x,CUE1_y); 
-    %DT forbidden region calculation
-    disp ' '; disp('DT check, cell 1 to 2:'); %FR violated -> pair will be deleted from 1st list
-    [PC_user_list1_upd,min_index12,min_index13] = forbidden_region_DUE (PC_user_list1_upd, min_index12, ...
-                                                        PC_user_list2_upd, min_index21,DUE_SINR_min,DUE_Exp, ...
-                                                                        PC_user_list3_upd); 
-    disp ' '; disp('DT check, cell 2 to 3:'); 
-    [PC_user_list2_upd,min_index23,min_index21] = forbidden_region_DUE (PC_user_list2_upd, min_index23, ...
-                                                        PC_user_list3_upd, min_index32,DUE_SINR_min,DUE_Exp, ...
-                                                                        PC_user_list1_upd); 
-    disp ' '; disp('DT check, cell 3 to 1:'); 
-    [PC_user_list3_upd,min_index31,min_index32] = forbidden_region_DUE (PC_user_list3_upd, min_index31, ...
-                                                        PC_user_list1_upd, min_index13,DUE_SINR_min,DUE_Exp, ...
-                                                                        PC_user_list2_upd); 
+%     %% -------------PC-----------------------
+%     %calculation of closest pair to the border
+%     [min_index12] = closest_pair_to_CT (PC_user_list1,CUE2_x,CUE2_y);
+%     [min_index13] = closest_pair_to_CT (PC_user_list1,CUE3_x,CUE3_y);
+%     [min_index21] = closest_pair_to_CT (PC_user_list2,CUE1_x,CUE1_y);
+%     [min_index23] = closest_pair_to_CT (PC_user_list2,CUE3_x,CUE3_y);
+%     [min_index31] = closest_pair_to_CT (PC_user_list3,CUE1_x,CUE1_y);
+%     [min_index32] = closest_pair_to_CT (PC_user_list3,CUE2_x,CUE2_y);
+% 
+%     %CT forbidden region calculation 
+%     disp('--------PC--------');
+%     disp ' '; disp('CT check, cell 1 to 2:');
+%     [PC_user_list1_upd,min_index12,min_index13] = forbidden_region_CUE (PC_user_list1, min_index12,CUE2_x, ...
+%                                                         CUE2_y,eNB2_x,eNB2_y,CUE_SINR_min,CUE_Exp,CUE3_x,CUE3_y); 
+%     disp ' '; disp('CT check, cell 1 to 3:');                                                
+%     [PC_user_list1_upd,min_index13,min_index12] = forbidden_region_CUE (PC_user_list1_upd, min_index13,CUE3_x, ...
+%                                                         CUE3_y,eNB3_x,eNB3_y,CUE_SINR_min,CUE_Exp,CUE2_x,CUE2_y); 
+%     disp ' '; disp('CT check, cell 2 to 1:');                                                
+%     [PC_user_list2_upd,min_index21,min_index23] = forbidden_region_CUE (PC_user_list2, min_index21,CUE1_x, ...
+%                                                         CUE1_y,eNB1_x,eNB1_y,CUE_SINR_min,CUE_Exp,CUE3_x,CUE3_y);
+%     disp ' '; disp('CT check, cell 2 to 3:');                                                
+%     [PC_user_list2_upd,min_index23,min_index21] = forbidden_region_CUE (PC_user_list2_upd, min_index23,CUE3_x, ...
+%                                                         CUE3_y,eNB3_x,eNB3_y,CUE_SINR_min,CUE_Exp,CUE1_x,CUE1_y); 
+%     disp ' '; disp('CT check, cell 3 to 1:');                                                
+%     [PC_user_list3_upd,min_index31,min_index32] = forbidden_region_CUE (PC_user_list3, min_index31,CUE1_x, ...
+%                                                         CUE1_y,eNB1_x,eNB1_y,CUE_SINR_min,CUE_Exp,CUE2_x,CUE2_y);
+%     disp ' '; disp('CT check, cell 3 to 2:');                                                
+%     [PC_user_list3_upd,min_index32,min_index31] = forbidden_region_CUE (PC_user_list3_upd, min_index32,CUE2_x, ...
+%                                                         CUE2_y,eNB2_x,eNB2_y,CUE_SINR_min,CUE_Exp,CUE1_x,CUE1_y); 
+%     %DT forbidden region calculation
+%     disp ' '; disp('DT check, cell 1 to 2:'); %FR violated -> pair will be deleted from 1st list
+%     [PC_user_list1_upd,min_index12,min_index13] = forbidden_region_DUE (PC_user_list1_upd, min_index12, ...
+%                                                         PC_user_list2_upd, min_index21,DUE_SINR_min,DUE_Exp, ...
+%                                                                         PC_user_list3_upd); 
+%     disp ' '; disp('DT check, cell 2 to 3:'); 
+%     [PC_user_list2_upd,min_index23,min_index21] = forbidden_region_DUE (PC_user_list2_upd, min_index23, ...
+%                                                         PC_user_list3_upd, min_index32,DUE_SINR_min,DUE_Exp, ...
+%                                                                         PC_user_list1_upd); 
+%     disp ' '; disp('DT check, cell 3 to 1:'); 
+%     [PC_user_list3_upd,min_index31,min_index32] = forbidden_region_DUE (PC_user_list3_upd, min_index31, ...
+%                                                         PC_user_list1_upd, min_index13,DUE_SINR_min,DUE_Exp, ...
+%                                                                         PC_user_list2_upd); 
     %% ---------------------------------------  
     random_list1=D2D_user_list1(1:15:end,:);
     random_list2=D2D_user_list2(1:15:end,:);
@@ -219,8 +219,8 @@ for n=1:no_runs
     numbers_of_pairs_raw_AOS(n,slice) = length(AOS_user_list1)+length(AOS_user_list2)+length(AOS_user_list3); 
     numbers_of_pairs_new_AOS(n,slice) = length(AOS_user_list1_upd)+length(AOS_user_list2_upd)+length(AOS_user_list3_upd);
     
-    numbers_of_pairs_raw_PC(n,slice) = length(PC_user_list1)+length(PC_user_list2)+length(PC_user_list3); 
-    numbers_of_pairs_new_PC(n,slice) = length(PC_user_list1_upd)+length(PC_user_list2_upd)+length(PC_user_list3_upd);
+%     numbers_of_pairs_raw_PC(n,slice) = length(PC_user_list1)+length(PC_user_list2)+length(PC_user_list3); 
+%     numbers_of_pairs_new_PC(n,slice) = length(PC_user_list1_upd)+length(PC_user_list2_upd)+length(PC_user_list3_upd);
     
     CT_user_list_all=[CUE1_x,CUE1_y;CUE2_x,CUE2_y;CUE3_x,CUE3_y];
     % D2D_user_list_all=[D2D_user_list1;D2D_user_list2;D2D_user_list3];
@@ -228,8 +228,8 @@ for n=1:no_runs
     PRS_user_list_all_new= [PRS_user_list1_upd;PRS_user_list2_upd;PRS_user_list3_upd];
     AOS_user_list_all_raw= [AOS_user_list1;AOS_user_list2;AOS_user_list3];
     AOS_user_list_all_new= [AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
-    PC_user_list_all_raw= [PC_user_list1;PC_user_list2;PC_user_list3];
-    PC_user_list_all_new= [PC_user_list1_upd;PC_user_list2_upd;PC_user_list3_upd];
+%     PC_user_list_all_raw= [PC_user_list1;PC_user_list2;PC_user_list3];
+%     PC_user_list_all_new= [PC_user_list1_upd;PC_user_list2_upd;PC_user_list3_upd];
     
     CT_BS_gain1 = LTE_channel_model_urban_micro_NLOS(CUE1_x,CUE1_y,eNB1_x,eNB1_y); 
     CT_BS_gain2 = LTE_channel_model_urban_micro_NLOS(CUE2_x,CUE2_y,eNB2_x,eNB2_y);
@@ -316,38 +316,38 @@ for n=1:no_runs
         mult=mult * ( 1 + SINR_D_i3_new_AOS(k) );
     end
     SE_new_AOS(n)=log2( (1+SINR_C1_new_AOS)*(1+SINR_C2_new_AOS)*(1+SINR_C3_new_AOS) * mult );
-    %% -----------------SINR, SE raw PC--------------------
-    [SINR_C1_raw_PC,SINR_D_i1_raw_PC] = SINR_calc (1,PC_user_list1,eNB1_x,eNB1_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_raw,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
-    [SINR_C2_raw_PC,SINR_D_i2_raw_PC] = SINR_calc (2,PC_user_list2,eNB2_x,eNB2_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_raw,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
-    [SINR_C3_raw_PC,SINR_D_i3_raw_PC] = SINR_calc (3,PC_user_list3,eNB3_x,eNB3_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_raw,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
-
-    mult=1;
-    for k=1:length(SINR_D_i1_raw_PC)
-        mult=mult * ( 1 + SINR_D_i1_raw_PC(k) );
-    end
-    for k=1:length(SINR_D_i2_raw_PC)
-        mult=mult * ( 1 + SINR_D_i2_raw_PC(k) );
-    end
-    for k=1:length(SINR_D_i3_raw_PC)
-        mult=mult * ( 1 + SINR_D_i3_raw_PC(k) );
-    end
-    SE_raw_PC(n)=log2( (1+SINR_C1_raw_PC)*(1+SINR_C2_raw_PC)*(1+SINR_C3_raw_PC) * mult );
-    %% -----------------SINR, SE multicell PC--------------------
-    [SINR_C1_new_PC,SINR_D_i1_new_PC] = SINR_calc (1,PC_user_list1_upd,eNB1_x,eNB1_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
-    [SINR_C2_new_PC,SINR_D_i2_new_PC] = SINR_calc (2,PC_user_list1_upd,eNB2_x,eNB2_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
-    [SINR_C3_new_PC,SINR_D_i3_new_PC] = SINR_calc (3,PC_user_list1_upd,eNB3_x,eNB3_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
-
-    mult=1;
-    for k=1:length(SINR_D_i1_new_PC)
-        mult=mult * ( 1 + SINR_D_i1_new_PC(k) );
-    end
-    for k=1:length(SINR_D_i2_new_PC)
-        mult=mult * ( 1 + SINR_D_i2_new_PC(k) );
-    end
-    for k=1:length(SINR_D_i3_new_PC)
-        mult=mult * ( 1 + SINR_D_i3_new_PC(k) );
-    end
-    SE_new_PC(n)=log2( (1+SINR_C1_new_PC)*(1+SINR_C2_new_PC)*(1+SINR_C3_new_PC) * mult );
+%     %% -----------------SINR, SE raw PC--------------------
+%     [SINR_C1_raw_PC,SINR_D_i1_raw_PC] = SINR_calc (1,PC_user_list1,eNB1_x,eNB1_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_raw,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
+%     [SINR_C2_raw_PC,SINR_D_i2_raw_PC] = SINR_calc (2,PC_user_list2,eNB2_x,eNB2_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_raw,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
+%     [SINR_C3_raw_PC,SINR_D_i3_raw_PC] = SINR_calc (3,PC_user_list3,eNB3_x,eNB3_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_raw,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
+% 
+%     mult=1;
+%     for k=1:length(SINR_D_i1_raw_PC)
+%         mult=mult * ( 1 + SINR_D_i1_raw_PC(k) );
+%     end
+%     for k=1:length(SINR_D_i2_raw_PC)
+%         mult=mult * ( 1 + SINR_D_i2_raw_PC(k) );
+%     end
+%     for k=1:length(SINR_D_i3_raw_PC)
+%         mult=mult * ( 1 + SINR_D_i3_raw_PC(k) );
+%     end
+%     SE_raw_PC(n)=log2( (1+SINR_C1_raw_PC)*(1+SINR_C2_raw_PC)*(1+SINR_C3_raw_PC) * mult );
+%     %% -----------------SINR, SE multicell PC--------------------
+%     [SINR_C1_new_PC,SINR_D_i1_new_PC] = SINR_calc (1,PC_user_list1_upd,eNB1_x,eNB1_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
+%     [SINR_C2_new_PC,SINR_D_i2_new_PC] = SINR_calc (2,PC_user_list1_upd,eNB2_x,eNB2_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
+%     [SINR_C3_new_PC,SINR_D_i3_new_PC] = SINR_calc (3,PC_user_list1_upd,eNB3_x,eNB3_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,PC_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
+% 
+%     mult=1;
+%     for k=1:length(SINR_D_i1_new_PC)
+%         mult=mult * ( 1 + SINR_D_i1_new_PC(k) );
+%     end
+%     for k=1:length(SINR_D_i2_new_PC)
+%         mult=mult * ( 1 + SINR_D_i2_new_PC(k) );
+%     end
+%     for k=1:length(SINR_D_i3_new_PC)
+%         mult=mult * ( 1 + SINR_D_i3_new_PC(k) );
+%     end
+%     SE_new_PC(n)=log2( (1+SINR_C1_new_PC)*(1+SINR_C2_new_PC)*(1+SINR_C3_new_PC) * mult );
     
     %% ---------------------------------------   
     SINR_C_rand_all=[SINR_C_rand_all;SINR_C1_rand;SINR_C2_rand;SINR_C3_rand];
@@ -363,10 +363,10 @@ for n=1:no_runs
     SINR_C_new_all_AOS=[SINR_C_new_all_AOS;SINR_C1_new_AOS;SINR_C2_new_AOS;SINR_C3_new_AOS];
     SINR_D_i_new_all_AOS=[SINR_D_i_new_all_AOS;SINR_D_i1_new_AOS;SINR_D_i2_new_AOS;SINR_D_i3_new_AOS];
     
-    SINR_C_raw_all_PC=[SINR_C_raw_all_PC;SINR_C1_raw_PC;SINR_C2_raw_PC;SINR_C3_raw_PC];
-    SINR_D_i_raw_all_PC=[SINR_D_i_raw_all_PC;SINR_D_i1_raw_PC;SINR_D_i2_raw_PC;SINR_D_i3_raw_PC];
-    SINR_C_new_all_PC=[SINR_C_new_all_PC;SINR_C1_new_PC;SINR_C2_new_PC;SINR_C3_new_PC];
-    SINR_D_i_new_all_PC=[SINR_D_i_new_all_PC;SINR_D_i1_new_PC;SINR_D_i2_new_PC;SINR_D_i3_new_PC];
+%     SINR_C_raw_all_PC=[SINR_C_raw_all_PC;SINR_C1_raw_PC;SINR_C2_raw_PC;SINR_C3_raw_PC];
+%     SINR_D_i_raw_all_PC=[SINR_D_i_raw_all_PC;SINR_D_i1_raw_PC;SINR_D_i2_raw_PC;SINR_D_i3_raw_PC];
+%     SINR_C_new_all_PC=[SINR_C_new_all_PC;SINR_C1_new_PC;SINR_C2_new_PC;SINR_C3_new_PC];
+%     SINR_D_i_new_all_PC=[SINR_D_i_new_all_PC;SINR_D_i1_new_PC;SINR_D_i2_new_PC;SINR_D_i3_new_PC];
 end   
 % SINR_C_all_all_dB=pow2db(SINR_C_all_all);
 % SINR_D_i_all_all_dB=pow2db(SINR_D_i_all_all);
@@ -383,18 +383,18 @@ SINR_D_i_raw_all_AOS_dB=pow2db(SINR_D_i_raw_all_AOS);
 SINR_C_new_all_AOS_dB=pow2db(SINR_C_new_all_AOS); %multiAOS
 SINR_D_i_new_all_AOS_dB=pow2db(SINR_D_i_new_all_AOS);
 
-SINR_C_raw_all_PC_dB=pow2db(SINR_C_raw_all_PC); %PC
-SINR_D_i_raw_all_PC_dB=pow2db(SINR_D_i_raw_all_PC);
-SINR_C_new_all_PC_dB=pow2db(SINR_C_new_all_PC); %multiPC
-SINR_D_i_new_all_PC_dB=pow2db(SINR_D_i_new_all_PC);
+% SINR_C_raw_all_PC_dB=pow2db(SINR_C_raw_all_PC); %PC
+% SINR_D_i_raw_all_PC_dB=pow2db(SINR_D_i_raw_all_PC);
+% SINR_C_new_all_PC_dB=pow2db(SINR_C_new_all_PC); %multiPC
+% SINR_D_i_new_all_PC_dB=pow2db(SINR_D_i_new_all_PC);
 
 SE_rand=transpose(SE_rand);
 SE_raw=transpose(SE_raw);
 SE_new=transpose(SE_new);
 SE_raw_AOS=transpose(SE_raw_AOS);
 SE_new_AOS=transpose(SE_new_AOS);
-SE_raw_PC=transpose(SE_raw_PC);
-SE_new_PC=transpose(SE_new_PC);
+% SE_raw_PC=transpose(SE_raw_PC);
+% SE_new_PC=transpose(SE_new_PC);
 
 % av_SE_rand(slice)=mean(SE_rand);
 % av_SE_raw(slice)=mean(SE_raw);
@@ -422,12 +422,12 @@ scatter(D2D_user_list2(:,3),D2D_user_list2(:,4),'k','MarkerEdgeAlpha',.2,'Handle
 scatter(D2D_user_list3(:,1),D2D_user_list3(:,2),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
 scatter(D2D_user_list3(:,3),D2D_user_list3(:,4),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
 
-scatter(PC_user_list1(:,1),PC_user_list1(:,2),'blue');
-scatter(PC_user_list1(:,3),PC_user_list1(:,4),'blue','HandleVisibility','off');
-scatter(PC_user_list2(:,1),PC_user_list2(:,2),'blue','HandleVisibility','off');
-scatter(PC_user_list2(:,3),PC_user_list2(:,4),'blue','HandleVisibility','off');
-scatter(PC_user_list3(:,1),PC_user_list3(:,2),'blue','HandleVisibility','off');
-scatter(PC_user_list3(:,3),PC_user_list3(:,4),'blue','HandleVisibility','off');
+% scatter(PC_user_list1(:,1),PC_user_list1(:,2),'blue');
+% scatter(PC_user_list1(:,3),PC_user_list1(:,4),'blue','HandleVisibility','off');
+% scatter(PC_user_list2(:,1),PC_user_list2(:,2),'blue','HandleVisibility','off');
+% scatter(PC_user_list2(:,3),PC_user_list2(:,4),'blue','HandleVisibility','off');
+% scatter(PC_user_list3(:,1),PC_user_list3(:,2),'blue','HandleVisibility','off');
+% scatter(PC_user_list3(:,3),PC_user_list3(:,4),'blue','HandleVisibility','off');
 
 scatter(AOS_user_list1(:,1),AOS_user_list1(:,2),'red');
 scatter(AOS_user_list1(:,3),AOS_user_list1(:,4),'red','HandleVisibility','off');
@@ -436,22 +436,22 @@ scatter(AOS_user_list2(:,3),AOS_user_list2(:,4),'red','HandleVisibility','off');
 scatter(AOS_user_list3(:,1),AOS_user_list3(:,2),'red','HandleVisibility','off');
 scatter(AOS_user_list3(:,3),AOS_user_list3(:,4),'red','HandleVisibility','off');
 
-mixed1=intersect(PC_user_list1,AOS_user_list1,'rows'); %selected by both PC&AOS
-mixed2=intersect(PC_user_list2,AOS_user_list2,'rows');
-mixed3=intersect(PC_user_list3,AOS_user_list3,'rows');
-scatter(mixed1(:,1),mixed1(:,2),'magenta');
-scatter(mixed1(:,3),mixed1(:,4),'magenta','HandleVisibility','off');
-scatter(mixed2(:,1),mixed2(:,2),'magenta','HandleVisibility','off');
-scatter(mixed2(:,3),mixed2(:,4),'magenta','HandleVisibility','off');
-scatter(mixed3(:,1),mixed3(:,2),'magenta','HandleVisibility','off');
-scatter(mixed3(:,3),mixed3(:,4),'magenta','HandleVisibility','off');
+% mixed1=intersect(PC_user_list1,AOS_user_list1,'rows'); %selected by both PC&AOS
+% mixed2=intersect(PC_user_list2,AOS_user_list2,'rows');
+% mixed3=intersect(PC_user_list3,AOS_user_list3,'rows');
+% scatter(mixed1(:,1),mixed1(:,2),'magenta');
+% scatter(mixed1(:,3),mixed1(:,4),'magenta','HandleVisibility','off');
+% scatter(mixed2(:,1),mixed2(:,2),'magenta','HandleVisibility','off');
+% scatter(mixed2(:,3),mixed2(:,4),'magenta','HandleVisibility','off');
+% scatter(mixed3(:,1),mixed3(:,2),'magenta','HandleVisibility','off');
+% scatter(mixed3(:,3),mixed3(:,4),'magenta','HandleVisibility','off');
 
-scatter(PC_user_list1_upd(:,1),PC_user_list1_upd(:,2),'blue','filled');
-scatter(PC_user_list1_upd(:,3),PC_user_list1_upd(:,4),'blue','filled','HandleVisibility','off');
-scatter(PC_user_list2_upd(:,1),PC_user_list2_upd(:,2),'blue','filled','HandleVisibility','off'); %HandleVisibility is off for legend to have only 3 opaque properties
-scatter(PC_user_list2_upd(:,3),PC_user_list2_upd(:,4),'blue','filled','HandleVisibility','off');
-scatter(PC_user_list3_upd(:,1),PC_user_list3_upd(:,2),'blue','filled','HandleVisibility','off');
-scatter(PC_user_list3_upd(:,3),PC_user_list3_upd(:,4),'blue','filled','HandleVisibility','off');
+% scatter(PC_user_list1_upd(:,1),PC_user_list1_upd(:,2),'blue','filled');
+% scatter(PC_user_list1_upd(:,3),PC_user_list1_upd(:,4),'blue','filled','HandleVisibility','off');
+% scatter(PC_user_list2_upd(:,1),PC_user_list2_upd(:,2),'blue','filled','HandleVisibility','off'); %HandleVisibility is off for legend to have only 3 opaque properties
+% scatter(PC_user_list2_upd(:,3),PC_user_list2_upd(:,4),'blue','filled','HandleVisibility','off');
+% scatter(PC_user_list3_upd(:,1),PC_user_list3_upd(:,2),'blue','filled','HandleVisibility','off');
+% % scatter(PC_user_list3_upd(:,3),PC_user_list3_upd(:,4),'blue','filled','HandleVisibility','off');
 
 scatter(AOS_user_list1_upd(:,1),AOS_user_list1_upd(:,2),'red','filled');
 scatter(AOS_user_list1_upd(:,3),AOS_user_list1_upd(:,4),'red','filled','HandleVisibility','off');
@@ -460,17 +460,18 @@ scatter(AOS_user_list2_upd(:,3),AOS_user_list2_upd(:,4),'red','filled','HandleVi
 scatter(AOS_user_list3_upd(:,1),AOS_user_list3_upd(:,2),'red','filled','HandleVisibility','off');
 scatter(AOS_user_list3_upd(:,3),AOS_user_list3_upd(:,4),'red','filled','HandleVisibility','off');
 
-mixed1_filled=intersect(PC_user_list1_upd,AOS_user_list1_upd,'rows');
-mixed2_filled=intersect(PC_user_list2_upd,AOS_user_list2_upd,'rows');
-mixed3_filled=intersect(PC_user_list3_upd,AOS_user_list3_upd,'rows');
-scatter(mixed1_filled(:,1),mixed1_filled(:,2),'magenta','filled');
-scatter(mixed1_filled(:,3),mixed1_filled(:,4),'magenta','filled','HandleVisibility','off');
-scatter(mixed2_filled(:,1),mixed2_filled(:,2),'magenta','filled','HandleVisibility','off');
-scatter(mixed2_filled(:,3),mixed2_filled(:,4),'magenta','filled','HandleVisibility','off');
-scatter(mixed3_filled(:,1),mixed3_filled(:,2),'magenta','filled','HandleVisibility','off');
-scatter(mixed3_filled(:,3),mixed3_filled(:,4),'magenta','filled','HandleVisibility','off');
+% mixed1_filled=intersect(PC_user_list1_upd,AOS_user_list1_upd,'rows');
+% mixed2_filled=intersect(PC_user_list2_upd,AOS_user_list2_upd,'rows');
+% mixed3_filled=intersect(PC_user_list3_upd,AOS_user_list3_upd,'rows');
+% scatter(mixed1_filled(:,1),mixed1_filled(:,2),'magenta','filled');
+% scatter(mixed1_filled(:,3),mixed1_filled(:,4),'magenta','filled','HandleVisibility','off');
+% scatter(mixed2_filled(:,1),mixed2_filled(:,2),'magenta','filled','HandleVisibility','off');
+% scatter(mixed2_filled(:,3),mixed2_filled(:,4),'magenta','filled','HandleVisibility','off');
+% scatter(mixed3_filled(:,1),mixed3_filled(:,2),'magenta','filled','HandleVisibility','off');
+% scatter(mixed3_filled(:,3),mixed3_filled(:,4),'magenta','filled','HandleVisibility','off');
 
-legend('CT','init DT','DT PC','DT AOS','DT PC&AOS','DT multiPC','DT multiAOS','DT multiPC&AOS');
+% legend('CT','init DT','DT PC','DT AOS','DT PC&AOS','DT multiPC','DT multiAOS','DT multiPC&AOS');
+legend('CT','init DT','DT AOS','DT multiAOS');
 
 
 %CDF DT
@@ -483,10 +484,10 @@ cdfplot(SINR_D_i_new_all_dB);
 % cdfplot(SINR_D_i_raw_all_AOS_dB);
 cdfplot(SINR_D_i_new_all_AOS_dB);
 % cdfplot(SINR_D_i_raw_all_PC_dB);
-cdfplot(SINR_D_i_new_all_PC_dB);
+% cdfplot(SINR_D_i_new_all_PC_dB);
 grid on
 % legend('rand','PRS','multiPRS','AOS','multiAOS','PC','multiPC');
-legend('rand','multiPRS','multiAOS','multiPC');
+legend('rand','multiPRS','multiAOS');
 xlabel('DT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
 
@@ -500,10 +501,10 @@ cdfplot(SINR_C_new_all_dB);
 % cdfplot(SINR_C_raw_all_AOS_dB);
 cdfplot(SINR_C_new_all_AOS_dB);
 % cdfplot(SINR_C_raw_all_PC_dB);
-cdfplot(SINR_C_new_all_PC_dB);
+% cdfplot(SINR_C_new_all_PC_dB);
 grid on
 % legend('rand','PRS','multiPRS','AOS','multiAOS','PC','multiPC');
-legend('rand','multiPRS','multiAOS','multiPC');
+legend('rand','multiPRS','multiAOS');
 xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
 
@@ -513,8 +514,8 @@ B=[numbers_of_pairs_raw,SE_raw];
 C=[numbers_of_pairs_new,SE_new];
 D=[numbers_of_pairs_raw_AOS,SE_raw_AOS];
 E=[numbers_of_pairs_new_AOS,SE_new_AOS];
-F=[numbers_of_pairs_raw_PC,SE_raw_PC];
-G=[numbers_of_pairs_new_PC,SE_new_PC];
+% F=[numbers_of_pairs_raw_PC,SE_raw_PC];
+% G=[numbers_of_pairs_new_PC,SE_new_PC];
 A=sortrows(A); %from smallest # of pairs to highest
 [Alink,aa] = findgroups(A(:,1)); %aa - different values of pairs, Alink - links from aa to A
 A1 = [ aa, splitapply(@mean,A(:,2),Alink)]; %find mean value for each # of pairs
@@ -530,12 +531,12 @@ D1 = [ dd, splitapply(@mean,D(:,2),Dlink)];
 E= sortrows(E);
 [Elink,ee] = findgroups(E(:,1));
 E1 = [ ee, splitapply(@mean,E(:,2),Elink)];
-F= sortrows(F);
-[Flink,ff] = findgroups(F(:,1));
-F1 = [ ff, splitapply(@mean,F(:,2),Flink)];
-G= sortrows(G);
-[Glink,gg] = findgroups(G(:,1));
-G1 = [ gg, splitapply(@mean,G(:,2),Glink)];
+% F= sortrows(F);
+% [Flink,ff] = findgroups(F(:,1));
+% F1 = [ ff, splitapply(@mean,F(:,2),Flink)];
+% G= sortrows(G);
+% [Glink,gg] = findgroups(G(:,1));
+% G1 = [ gg, splitapply(@mean,G(:,2),Glink)];
 
 figure
 plot(A1(:,1),A1(:,2),'b-o','linewidth',2.5); %b r y m g c 
@@ -545,10 +546,10 @@ plot(C1(:,1),C1(:,2),'r-o','linewidth',2.5);
 % plot(D1(:,1),D1(:,2),'m-o','linewidth',2.5);
 plot(E1(:,1),E1(:,2),'y-o','linewidth',2.5);
 % plot(F1(:,1),F1(:,2),'c-o','linewidth',2.5);
-plot(G1(:,1),G1(:,2),'m-o','linewidth',2.5);
+% plot(G1(:,1),G1(:,2),'m-o','linewidth',2.5);
 grid on
 % legend('rand','PRS','multiPRS','AOS','multiAOS','PC','multiPC');
-legend('rand','multiPRS','multiAOS','multiPC');
+legend('rand','multiPRS','multiAOS');
 xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
 ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
 
