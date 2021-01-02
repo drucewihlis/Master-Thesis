@@ -26,7 +26,7 @@ for n=1:no_runs
     disp(to_disp);
     Cell_Radius = 100;
     D2D_Sep_Max = 0.1*Cell_Radius;
-    Max_Users = 50;
+    Max_Users = 50; % pairs
     CUE_Exp = 3.67; % Cellular Pathloss Exponent - Alpha_zero
     DUE_Exp = 4.33; % Devices Pathloss Exponent - Alpha_d
     CUE_SINR_min = db2pow(CUE_SINR_min_dB); 
@@ -255,24 +255,19 @@ for n=1:no_runs
 end   
 scatter_plot(grid_Kazan,BS_list,AOS_user_list_all_new,CT_user_list_all_mapped,SINR_C_AOS_dB,SINR_D_AOS_dB);
 title('multi AOS')
-%colorlegend;
-t2='\SINR_C_AOS_dB.mat';
-save(strcat(t1,num2str(N),t2),'SINR_C_AOS_dB');
-t2='\SINR_D_AOS_dB.mat';
-save(strcat(t1,num2str(N),t2),'SINR_D_AOS_dB'); 
-t2='\SINR_C_OFDMPl_PC_dB.mat';
-save(strcat(t1,num2str(N),t2),'SINR_C_OFDMPl_PC_dB'); 
-t2='\SINR_D_OFDMPl_PC_dB.mat';
-save(strcat(t1,num2str(N),t2),'SINR_D_OFDMPl_PC_dB'); 
-t2='\AOS_user_list_all_new.mat';
-save(strcat(t1,num2str(N),t2),'AOS_user_list_all_new');
-t2='\OFDMPl_PC_user_list_all.mat';
-save(strcat(t1,num2str(N),t2),'OFDMPl_PC_user_list_all'); 
-%% PLOTS
-% UT distribution visualization
-% close all;
-
-
+colorlegend;
+% t2='\SINR_C_AOS_dB.mat';
+% save(strcat(t1,num2str(N),t2),'SINR_C_AOS_dB');
+% t2='\SINR_D_AOS_dB.mat';
+% save(strcat(t1,num2str(N),t2),'SINR_D_AOS_dB'); 
+% t2='\SINR_C_OFDMPl_PC_dB.mat';
+% save(strcat(t1,num2str(N),t2),'SINR_C_OFDMPl_PC_dB'); 
+% t2='\SINR_D_OFDMPl_PC_dB.mat';
+% save(strcat(t1,num2str(N),t2),'SINR_D_OFDMPl_PC_dB'); 
+% t2='\AOS_user_list_all_new.mat';
+% save(strcat(t1,num2str(N),t2),'AOS_user_list_all_new');
+% t2='\OFDMPl_PC_user_list_all.mat';
+% save(strcat(t1,num2str(N),t2),'OFDMPl_PC_user_list_all'); 
 
 %% FUNCTIONS
 function [ans] = dist (x1, y1, x2, y2) 
@@ -515,6 +510,9 @@ function [D2D_user_list_all_mapped,Gain,mean_C_OFDMPl,mean_D_OFDMPl] = OFDMPlann
             min_row_DT=find(SINR_D_dB==min(SINR_D_dB));
             min_row_CT=find(SINR_C_dB==min(SINR_C_dB));
             max_row_DT_int=find(int_from_DTTxs_to_BS==max(int_from_DTTxs_to_BS));
+            if (length(D2D_user_list_all_mapped))==50
+            	scatter_plot(grid_Kazan,BS_list,D2D_user_list_all_mapped,CT_user_list_all_mapped,SINR_C_dB,SINR_D_dB);
+            end
         if ( (isempty(D2D_user_list_all_mapped))  || ( (SINR_D_dB(min_row_DT)>SINR_th_DT_dB) &&  (SINR_C_dB(min_row_CT)>SINR_th_CT_dB) ) )   
             %list is empty or all conditions are met
             mean_C_OFDMPl=transpose(mean_C_OFDMPl);

@@ -99,9 +99,9 @@ B=sortrows(B);
 B1 = [ bb, splitapply(@mean,B(:,2),Blink)];
 
 figure
-plot(A1(:,1),A1(:,2),'b-o','linewidth',2.5); %b r y m g c 
+plot(A1(:,1),A1(:,2),'y-o','linewidth',2.5); %b r y m g c 
 hold on
-plot(B1(:,1),B1(:,2),'r-o','linewidth',2.5);
+plot(B1(:,1),B1(:,2),'g-o','linewidth',2.5);
 grid on
 legend('multi-cell AOS','OFDMPlanning PC');
 xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);

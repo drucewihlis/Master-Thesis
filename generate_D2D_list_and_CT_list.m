@@ -51,14 +51,14 @@ grid_Kazan_for_CTs=table2array(grid_Kazan_for_CTs);
     scatter(eNB3_x,eNB3_y,'k','filled');
 
 
-user_list=[CT_user_list_all_mapped;D2D_user_list_all_mapped_1col];
-t1='C:\Users\Xiaomi\Documents\YASMP\ARP\codes\cases\case';
-t2='\D2D_user_list_all_mapped.mat';
-save(strcat(t1,num2str(N),t2),'D2D_user_list_all_mapped');
-t2='\CT_user_list_all_mapped.mat';
-save(strcat(t1,num2str(N),t2),'CT_user_list_all_mapped'); 
-t2='\user_list.mat';
-save(strcat(t1,num2str(N),t2),'user_list');
+% user_list=[CT_user_list_all_mapped;D2D_user_list_all_mapped_1col];
+% t1='C:\Users\Xiaomi\Documents\YASMP\ARP\codes\cases\case';
+% t2='\D2D_user_list_all_mapped.mat';
+% save(strcat(t1,num2str(N),t2),'D2D_user_list_all_mapped');
+% t2='\CT_user_list_all_mapped.mat';
+% save(strcat(t1,num2str(N),t2),'CT_user_list_all_mapped'); 
+% t2='\user_list.mat';
+% save(strcat(t1,num2str(N),t2),'user_list');
 
 function [user_list_mapped,grid]= mapping_to_grid (grid, user_list)
     if (isempty(user_list))

@@ -20,13 +20,13 @@ dB_value_grid=[33]; % CT SINR th, level of forb reg harshness
 DUE_SINR_min_dB	= 46; %DT SINR th     6/15 ARP, 30/46 opt
 for dB_value=[dB_value_grid] %-not used- loop over different SINR thresholds
     
-no_runs=5;
+no_runs=1000;
 for n=1:no_runs
     to_disp=['iteration # ',num2str(n)];
     disp(to_disp);
     Cell_Radius = 200;
     D2D_Sep_Max = 0.1*Cell_Radius;
-    Max_Users = 100;
+    Max_Users = 100; % pairs
     CUE_Exp = 3.67; % Cellular Pathloss Exponent - Alpha_zero
     DUE_Exp = 4.33; % Devices Pathloss Exponent - Alpha_d
     CUE_SINR_min_dB	= dB_value; 
@@ -37,11 +37,6 @@ for n=1:no_runs
     eNB1_x = 200; eNB1_y = 200; 
     eNB2_x = 400; eNB2_y = 200+200*sqrt(3);
     eNB3_x = 600; eNB3_y = 200;
-
-%     %cells' contact points' coordinates 
-%     dot12_x = 200+100; dot12_y = 200+100*sqrt(3); 
-%     dot13_x = 400; dot13_y = 200; 
-%     dot23_x = 400+100; dot23_y = 200+100*sqrt(3); 
 
     %distibution of users in 3 cells
     D2D_user_list1 = LTE_UE_uniform_distribution_upd(eNB1_x,eNB1_y,Cell_Radius,D2D_Sep_Max, Max_Users); %Tx_x,Tx_y,Rx_x,Rx_y
@@ -487,7 +482,7 @@ cdfplot(SINR_D_i_new_all_AOS_dB);
 % cdfplot(SINR_D_i_new_all_PC_dB);
 grid on
 % legend('rand','PRS','multiPRS','AOS','multiAOS','PC','multiPC');
-legend('rand','multiPRS','multiAOS');
+legend('random','multiPRS','multiAOS');
 xlabel('DT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
 
@@ -504,7 +499,7 @@ cdfplot(SINR_C_new_all_AOS_dB);
 % cdfplot(SINR_C_new_all_PC_dB);
 grid on
 % legend('rand','PRS','multiPRS','AOS','multiAOS','PC','multiPC');
-legend('rand','multiPRS','multiAOS');
+legend('random','multiPRS','multiAOS');
 xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
 
@@ -552,6 +547,8 @@ grid on
 legend('rand','multiPRS','multiAOS');
 xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
 ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
+
+save('A1.mat','A1');save('C1.mat','C1');save('E1.mat','E1');
 
 %% FUNCTIONS
 function [ans] = dist (x1, y1, x2, y2) 
