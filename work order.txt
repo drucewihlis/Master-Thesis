@@ -1,8 +1,0 @@
-create folder caseN
-generate_lists w/ "save(caseN)" (3 changes)
-copy .xls and rename "caseN" 
-insert user_list, save
-move this .xls to OFDMPl folder, run, save
-insert 'a' to .xls
-multi_cell_Kazan: 3+6 lines change to caseN, run
-statistic_plots: N++, run

@@ -1,4 +1,4 @@
-function [rank_PRS,N_selected_PRS,rank,N_selected_AOS]=single_cell_PRS_AOS(D2D_user_list, eNB_x,eNB_y,CUE_x_tx,CUE_y_tx,Max_Users,Cell_Radius)
+function [rank_PRS,N_selected_PRS,rank,N_selected_AOS]=single_cell_PRS_AOS(D2D_user_list, eNB_x,eNB_y,CUE_x_tx,CUE_y_tx,Max_Users,Cell_Radius,D2D_Sep_Max)
 
 % clc;clear all;close all;
 %% ParamIters Definitions as per table 1
@@ -39,7 +39,7 @@ UE_Dist_Min = 10; % Minimum distance of any UE (i.e. CUE or DUE) from either the
 CUE_DUE_rx_Dist_Max = 1 * Cell_Radius; % Maximum distance between CUE & receivers of other DUEs
 DUE_DUE_rx_Dist_Max = 1 * Cell_Radius; % Maximum distance between DUE & receivers of other DUEs
 
-D2D_Sep_Max = 0.1*Cell_Radius;
+% D2D_Sep_Max = 0.1*Cell_Radius;
 % Max_Users = 100;
 No_Runs = 1; %initially 10
 
