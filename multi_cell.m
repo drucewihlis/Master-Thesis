@@ -11,16 +11,25 @@ DUE_Exp = 4.33; % Devices Pathloss Exponent - Alpha_d
 eNB1_x = 200; eNB1_y = 200; 
 eNB2_x = 400; eNB2_y = 200+200*sqrt(3);
 eNB3_x = 600; eNB3_y = 200;
+eNBs=[eNB1_x eNB1_y; eNB2_x eNB2_y; eNB3_x eNB3_y];
 customColormap = [1 0 0  ;1 0 1 ;0 1 1; 1 1 0; 0 0 1 ; 0 1 0]; %r m c y b g
 customColormap_char = ['r'; 'm'; 'c' ;'y'; 'b'; 'g' ]; 
 
+Cell_Radius = 200;
+D2D_Sep_Max = 0.1*Cell_Radius;
+Max_Users = 100; % pairs in each cell
+
+av_SE=147; %bps/Hz
+SE_percent=25; % percent of drop
+SE_lower_bound=av_SE*(100-SE_percent)/100;
 mobility=5; % percent of the cell radius
 velocity_kmh=10; %km/h
-velocity=velocity_kmh*5/18;
-timestamp=10; %sec
-number_of_timestamps=2;
+velocity=velocity_kmh*5/18; %m/sec
+time=10; %sec between timestamps
+distance=velocity*time;
+number_of_timestamps=20;
 CTs = 3; % same # of CTs for each cell
-no_runs=10;
+no_runs=30; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
 
 for ct=1:CTs
     SINR_C_mAOS{1,ct}=[];
@@ -39,26 +48,52 @@ for ct=1:CTs
     SINR_D_rand_all_dB{1,ct}=[];SINR_D_rand_all_dB{2,ct}=[];
 end
 
-Cell_Radius = 200;
-D2D_Sep_Max = 0.1*Cell_Radius;
-Max_Users = 100; % pairs
 
 for n=1:no_runs
     to_disp=['n# ',num2str(n)];
     disp(to_disp);
     Max_Users1=Max_Users; Max_Users2=Max_Users; Max_Users3=Max_Users;
     
+    drop=0;
     %distibution of users in 3 cells
     D2D_user_list1 = LTE_UE_uniform_distribution_upd(eNB1_x,eNB1_y,Cell_Radius,D2D_Sep_Max, Max_Users); %Tx_x,Tx_y,Rx_x,Rx_y
     D2D_user_list2 = LTE_UE_uniform_distribution_upd(eNB2_x,eNB2_y,Cell_Radius,D2D_Sep_Max, Max_Users);
     D2D_user_list3 = LTE_UE_uniform_distribution_upd(eNB3_x,eNB3_y,Cell_Radius,D2D_Sep_Max, Max_Users);
     [CUEs{1,1},~, ~,~, ~,~, ~,...
-        CT_BS_gain1{1,1},CT_BS_gain2{1,1},CT_BS_gain3{1,1}]=generate_3_CTs(eNB1_x,eNB1_y,eNB2_x,eNB2_y,eNB3_x,eNB3_y,Cell_Radius);
+        CT_BS_gain1{1,1},CT_BS_gain2{1,1},CT_BS_gain3{1,1}]=generate_3_CTs(eNB1_x,eNB1_y,eNB2_x,eNB2_y,eNB3_x,eNB3_y,Cell_Radius);   
+%     save CUEs.mat; save D2D_user_list1;save D2D_user_list2;save D2D_user_list3;
+%     load CUEs.mat; load D2D_user_list1;load D2D_user_list2;load D2D_user_list3;
     
     D2D_user_list1_initial=D2D_user_list1;
     D2D_user_list2_initial=D2D_user_list2;
     D2D_user_list3_initial=D2D_user_list3;
+    D2D_user_list1_all_states{1,1}=D2D_user_list1;
+    D2D_user_list2_all_states{1,1}=D2D_user_list2;
+    D2D_user_list3_all_states{1,1}=D2D_user_list3;
+
+    %give each pair random direction
+    for dt=1:size(D2D_user_list1,1) 
+        theta{1}(dt,1)= 2*pi*rand(1,1);
+    end
+    for dt=1:size(D2D_user_list2,1)
+        theta{2}(dt,1)= 2*pi*rand(1,1);
+    end
+    for dt=1:size(D2D_user_list3,1)
+        theta{3}(dt,1)= 2*pi*rand(1,1);
+    end
+%     save theta.mat;
+%     load theta.mat;
     
+%     distr_visual(customColormap_char(1),CUEs{1,1}(1,1),CUEs{1,1}(1,2),CUEs{1,1}(2,1),CUEs{1,1}(2,2),CUEs{1,1}(3,1),CUEs{1,1}(3,2),... %plot the distribution
+%         D2D_user_list1_all_states{1,1},D2D_user_list2_all_states{1,1},D2D_user_list3_all_states{1,1},...
+%         D2D_user_list1_all_states{2,1},D2D_user_list2_all_states{2,1},D2D_user_list3_all_states{2,1},...
+%         D2D_user_list1_all_states{3,1},D2D_user_list2_all_states{3,1},D2D_user_list3_all_states{3,1});
+%     distr_visual(customColormap_char(1),CUEs{1,1}(1,1),CUEs{1,1}(1,2),CUEs{1,1}(2,1),CUEs{1,1}(2,2),CUEs{1,1}(3,1),CUEs{1,1}(3,2),... %plot the distribution
+%         D2D_user_list1_all_states{4,1},D2D_user_list2_all_states{4,1},D2D_user_list3_all_states{4,1},...
+%         D2D_user_list1_all_states{5,1},D2D_user_list2_all_states{5,1},D2D_user_list3_all_states{5,1},...
+%         D2D_user_list1_all_states{6,1},D2D_user_list2_all_states{6,1},D2D_user_list3_all_states{6,1});
+        
+
     [D2D_user_list1_moved]=move_list(D2D_user_list1_initial,mobility,Cell_Radius); %move DTs
     [D2D_user_list2_moved]=move_list(D2D_user_list2_initial,mobility,Cell_Radius);
     [D2D_user_list3_moved]=move_list(D2D_user_list3_initial,mobility,Cell_Radius);
@@ -75,13 +110,21 @@ for n=1:no_runs
                 color=customColormap_char(3); %c
         end
         
-        %RANDOM
+        %% RANDOM
         rand_sqc1 = randperm(size(D2D_user_list1,1));  %https://www.mathworks.com/matlabcentral/answers/17659-how-to-select-random-rows-from-a-matrix
         random_list1{1,ct} = D2D_user_list1(rand_sqc1(1:5),:);
         rand_sqc2 = randperm(size(D2D_user_list2,1));
         random_list2{1,ct} = D2D_user_list2(rand_sqc2(1:5),:);
         rand_sqc3 = randperm(size(D2D_user_list3,1));
         random_list3{1,ct} = D2D_user_list3(rand_sqc3(1:5),:);
+        
+        rank_random1{ct}= ismember(D2D_user_list1,random_list1{1,ct}); %find indeces of the selected pairs
+        rank_random1{ct}=rank_random1{ct}(:,1);
+        rank_random2{ct}= ismember(D2D_user_list2,random_list2{1,ct}); 
+        rank_random2{ct}=rank_random2{ct}(:,1);
+        rank_random3{ct}= ismember(D2D_user_list3,random_list3{1,ct});
+        rank_random3{ct}=rank_random3{ct}(:,1);
+
         random_list_all{1,ct}=[random_list1{1,ct};random_list2{1,ct};random_list3{1,ct}];
         pairs_qtity_random{1,ct}(n,1)=size(random_list1{1,ct},1)+size(random_list2{1,ct},1)+size(random_list3{1,ct},1); 
     
@@ -104,13 +147,14 @@ for n=1:no_runs
         SINR_C_rand_all_dB{1,ct}=pow2db(SINR_C_rand_all{1,ct}); %random
         SINR_D_rand_all_dB{1,ct}=pow2db(SINR_D_rand_all{1,ct});
 
-        %mAOS
+        %% mAOS
         [AOS_user_list1_upd,AOS_user_list2_upd,AOS_user_list3_upd,...
         D2Ds_left1,D2Ds_left2,D2Ds_left3,...
         AOS_user_list1,AOS_user_list2,AOS_user_list3,...
         SE_new_AOS,SINR_C_new_all_AOS_dB,SINR_D_i_new_all_AOS_dB,numbers_of_pairs_new_AOS,...
-        rank_AOS1{1,ct},rank_AOS2{1,ct},rank_AOS3{1,ct}] = ...
-        multi_cell_AOS ...
+        rank_AOS1{ct},rank_AOS2{ct},rank_AOS3{ct},...
+        rank_mAOS1{ct},rank_mAOS2{ct},rank_mAOS3{ct} ] = ...
+     multi_cell_AOS ...
         (D2D_user_list1,D2D_user_list2,D2D_user_list3, Cell_Radius,D2D_Sep_Max,...
         Max_Users1,Max_Users2,Max_Users3, ...
         CUE_Exp,DUE_Exp,CUE_SINR_min,DUE_SINR_min,eNB1_x,eNB2_x,eNB3_x,eNB1_y,eNB2_y,eNB3_y,...
@@ -125,174 +169,329 @@ for n=1:no_runs
         mAOS_list3{1,ct}=AOS_user_list3_upd;
         mAOS_list_all{1,ct}=[mAOS_list1{1,ct};mAOS_list2{1,ct};mAOS_list3{1,ct}]; %each col here consists of all DTs in 3 cells sharing same RB (1 to 3)
 
-        if (n==1)
-            distr_visual(color,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-            D2D_user_list1,D2D_user_list2,D2D_user_list3,...
-        random_list1{1,ct},random_list2{1,ct},random_list3{1,ct},...
-            mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct});
-           %AOS_list1{1,ct},AOS_list2{1,ct},AOS_list3{1,ct},...
-        end
+        %visual of mobility+ 1 hop
+%         if (n==1)
+%             distr_visual(color,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+%             D2D_user_list1,D2D_user_list2,D2D_user_list3,...
+%         random_list1{1,ct},random_list2{1,ct},random_list3{1,ct},...
+%             mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct});
+%            %AOS_list1{1,ct},AOS_list2{1,ct},AOS_list3{1,ct},...
+%         end
         
-        SE_mAOS{1,ct}(n,1)=SE_new_AOS;
+        SE_mAOS{1,ct}(n,:)=SE_new_AOS;
         pairs_qtity_mAOS{1,ct}(n,1)=numbers_of_pairs_new_AOS;
         SINR_C_mAOS_dB{1,ct}=[SINR_C_mAOS_dB{1,ct};SINR_C_new_all_AOS_dB];
-        SINR_D_mAOS_dB{1,ct}=[SINR_D_mAOS_dB{1,ct};SINR_D_i_new_all_AOS_dB];
-
-             
-        rank_mAOS1{1,ct}= ismember(D2D_user_list1_initial,mAOS_list1{1,ct}); %find indeces of the selected pairs
-        rank_mAOS2{1,ct}= ismember(D2D_user_list2_initial,mAOS_list2{1,ct}); %after moving this selection matrix remains the same
-        rank_mAOS3{1,ct}= ismember(D2D_user_list3_initial,mAOS_list3{1,ct});
-        
+        SINR_D_mAOS_dB{1,ct}=[SINR_D_mAOS_dB{1,ct};SINR_D_i_new_all_AOS_dB];        
        
      
     %mobility: 1 hop
+        %no need of it
         for cell=1:3 %move CT in each of 3 cells 
-            theta_= 2*pi*rand(1,1);
+            theta_Abu= 2*pi*rand(1,1);
             moving_dist=mobility*0.01*Cell_Radius*sqrt(rand(1,1));
-            CUEs{2,ct}(cell,1) = moving_dist*cos(theta_) + CUEs{1,ct}(cell,1) ;%x
-            CUEs{2,ct}(cell,2) = moving_dist*sin(theta_) + CUEs{1,ct}(cell,2) ;%y
+            CUEs{2,ct}(cell,1) = moving_dist*cos(theta_Abu) + CUEs{1,ct}(cell,1) ;%x %for now I should use only CUEs{1,ct}
+            CUEs{2,ct}(cell,2) = moving_dist*sin(theta_Abu) + CUEs{1,ct}(cell,2) ;%y
         end
         CT_BS_gain1{2,ct} = LTE_channel_model_urban_micro_NLOS(CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),eNB1_x,eNB1_y); 
         CT_BS_gain2{2,ct} = LTE_channel_model_urban_micro_NLOS(CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),eNB2_x,eNB2_y);
         CT_BS_gain3{2,ct} = LTE_channel_model_urban_micro_NLOS(CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),eNB3_x,eNB3_y);
-
-
-        mAOS_list1{2,ct} = mask (D2D_user_list1_moved,rank_mAOS1{1,ct}(:,1)); % select same AOS pairs
-        mAOS_list2{2,ct} = mask (D2D_user_list2_moved,rank_mAOS2{1,ct}(:,1)); 
-        mAOS_list3{2,ct} = mask (D2D_user_list3_moved,rank_mAOS3{1,ct}(:,1)); 
-        mAOS_list_all{2,ct}=[mAOS_list1{2,ct};mAOS_list2{2,ct};mAOS_list3{2,ct}]; 
+        %
         
-%         test=~(ismember(D2D_user_list1_moved,mAOS_list1{2,ct}));
-%         D2D_user_list1_moved_decreased=mask(D2D_user_list1_moved,test(:,1));
-%         test=~(ismember(D2D_user_list2_moved,mAOS_list2{2,ct}));
-%         D2D_user_list2_moved_decreased=mask(D2D_user_list2_moved,test(:,1));
-%         test=~(ismember(D2D_user_list3_moved,mAOS_list3{2,ct}));
-%         D2D_user_list3_moved_decreased=mask(D2D_user_list3_moved,test(:,1));
-           
-        AOS_list1{2,ct} = mask (D2D_user_list1_moved,rank_AOS1{1,ct}); % select same AOS pairs
-        AOS_list2{2,ct} = mask (D2D_user_list2_moved,rank_AOS2{1,ct});
-        AOS_list3{2,ct} = mask (D2D_user_list3_moved,rank_AOS3{1,ct});
+    %% MOVE PAIRS WITH SPEED    
+        for timestamp=2:number_of_timestamps                                         
+            D2D_user_list1_all_states{timestamp,ct}=move_list_w_speed(D2D_user_list1_all_states{timestamp-1,ct},theta{1},distance,number_of_timestamps);
+            D2D_user_list2_all_states{timestamp,ct}=move_list_w_speed(D2D_user_list2_all_states{timestamp-1,ct},theta{2},distance,number_of_timestamps);
+            D2D_user_list3_all_states{timestamp,ct}=move_list_w_speed(D2D_user_list3_all_states{timestamp-1,ct},theta{3},distance,number_of_timestamps);
+            theta=reverse_outside_pairs(D2D_user_list1_all_states{timestamp,ct},D2D_user_list2_all_states{timestamp,ct},D2D_user_list3_all_states{timestamp,ct},theta,eNBs,Cell_Radius);
 
-%          if ((ct==1||ct==2)&&n==1) %plot moved distribution visualization          
-%             distr_visual(color,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),... %plot the distribution after moving
-%             D2D_user_list1_moved,D2D_user_list2_moved,D2D_user_list3_moved,...
-%             [],[],[],...
-%            mAOS_list1{2,ct},mAOS_list2{2,ct},mAOS_list3{2,ct});
-          %AOS_list1{2,ct},AOS_list2{2,ct},AOS_list3{2,ct},...
-%          end
+            mAOS_list1{timestamp,ct} = mask (D2D_user_list1_all_states{timestamp,ct},rank_mAOS1{ct}); % select same AOS pairs
+            mAOS_list2{timestamp,ct} = mask (D2D_user_list2_all_states{timestamp,ct},rank_mAOS2{ct}); 
+            mAOS_list3{timestamp,ct} = mask (D2D_user_list3_all_states{timestamp,ct},rank_mAOS3{ct}); 
+            mAOS_list_all{timestamp,ct}=[mAOS_list1{timestamp,ct};mAOS_list2{timestamp,ct};mAOS_list3{timestamp,ct}]; 
+ 
+            random_list1{timestamp,ct} = mask (D2D_user_list1_all_states{timestamp,ct},rank_random1{ct}); % select same AOS pairs
+            random_list2{timestamp,ct} = mask (D2D_user_list2_all_states{timestamp,ct},rank_random2{ct}); 
+            random_list3{timestamp,ct} = mask (D2D_user_list3_all_states{timestamp,ct},rank_random3{ct}); 
+            random_list_all{timestamp,ct}=[random_list1{timestamp,ct};random_list2{timestamp,ct};random_list1{timestamp,ct}]; 
 
-        
-        [SINR_C1_mAOS{2,ct},SINR_D1_mAOS{2,ct}] = SINR_calc (1,mAOS_list1{2,ct},eNB1_x,eNB1_y,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),mAOS_list_all{2,ct},CT_BS_gain1{2,ct},CT_BS_gain2{2,ct},CT_BS_gain3{2,ct});
-        [SINR_C2_mAOS{2,ct},SINR_D2_mAOS{2,ct}] = SINR_calc (2,mAOS_list2{2,ct},eNB2_x,eNB2_y,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),mAOS_list_all{2,ct},CT_BS_gain1{2,ct},CT_BS_gain2{2,ct},CT_BS_gain3{2,ct});
-        [SINR_C3_mAOS{2,ct},SINR_D3_mAOS{2,ct}] = SINR_calc (3,mAOS_list3{2,ct},eNB3_x,eNB3_y,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),mAOS_list_all{2,ct},CT_BS_gain1{2,ct},CT_BS_gain2{2,ct},CT_BS_gain3{2,ct});
+            AOS_list1{timestamp,ct} = mask (D2D_user_list1_all_states{timestamp,ct},rank_AOS1{ct}); % select same AOS pairs
+            AOS_list2{timestamp,ct} = mask (D2D_user_list2_all_states{timestamp,ct},rank_AOS2{ct});
+            AOS_list3{timestamp,ct} = mask (D2D_user_list3_all_states{timestamp,ct},rank_AOS3{ct});
+            
+            %CTs here stay at their initial places
+%SE mAOS
+            [SINR_C1_mAOS{timestamp,ct},SINR_D1_mAOS{timestamp,ct}] = SINR_calc (1,mAOS_list1{timestamp,ct},eNB1_x,eNB1_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),mAOS_list_all{timestamp,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            [SINR_C2_mAOS{timestamp,ct},SINR_D2_mAOS{timestamp,ct}] = SINR_calc (2,mAOS_list2{timestamp,ct},eNB2_x,eNB2_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),mAOS_list_all{timestamp,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            [SINR_C3_mAOS{timestamp,ct},SINR_D3_mAOS{timestamp,ct}] = SINR_calc (3,mAOS_list3{timestamp,ct},eNB3_x,eNB3_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),mAOS_list_all{timestamp,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
             mult=1;
-            for k=1:size(SINR_D1_mAOS{2,ct},1)
-                mult=mult * ( 1 + SINR_D1_mAOS{2,ct}(k) );
+            for k=1:size(SINR_D1_mAOS{timestamp,ct},1)
+                mult=mult * ( 1 + SINR_D1_mAOS{timestamp,ct}(k) );
             end
-            for k=1:size(SINR_D2_mAOS{2,ct},1)
-                mult=mult * ( 1 + SINR_D2_mAOS{2,ct}(k) );
+            for k=1:size(SINR_D2_mAOS{timestamp,ct},1)
+                mult=mult * ( 1 + SINR_D2_mAOS{timestamp,ct}(k) );
             end
-            for k=1:size(SINR_D3_mAOS{2,ct},1)
-                mult=mult * ( 1 + SINR_D3_mAOS{2,ct}(k) );
+            for k=1:size(SINR_D3_mAOS{timestamp,ct},1)
+                mult=mult * ( 1 + SINR_D3_mAOS{timestamp,ct}(k) );
             end
-            SE_mAOS{2,ct}(n,:)=log2( (1+SINR_C1_mAOS{2,ct})*(1+SINR_C2_mAOS{2,ct})*(1+SINR_C3_mAOS{2,ct}) * mult );
+            SE_mAOS{timestamp,ct}(n,:)=log2( (1+SINR_C1_mAOS{timestamp,ct})*(1+SINR_C2_mAOS{timestamp,ct})*(1+SINR_C3_mAOS{timestamp,ct}) * mult );
+            
+%drop
+            if (SE_mAOS{timestamp,ct}(n,:)<SE_lower_bound)&&drop==0
+               timestamp_of_drop= timestamp;
+               drop=1;
+                D2D_user_list1_for_rerun=D2D_user_list1;
+                D2D_user_list2_for_rerun=D2D_user_list2;
+                D2D_user_list3_for_rerun=D2D_user_list3;   
+                Max_Users1_for_rerun=Max_Users1;
+                Max_Users2_for_rerun=Max_Users2;
+                Max_Users3_for_rerun=Max_Users3;
+            end
+            
+%SE random
+            [SINR_C1_rand{timestamp,ct},SINR_D1_rand{timestamp,ct}] = SINR_calc (1,random_list1{timestamp,ct},eNB1_x,eNB1_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),random_list_all{timestamp,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            [SINR_C2_rand{timestamp,ct},SINR_D2_rand{timestamp,ct}] = SINR_calc (2,random_list2{timestamp,ct},eNB2_x,eNB2_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),random_list_all{timestamp,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            [SINR_C3_rand{timestamp,ct},SINR_D3_rand{timestamp,ct}] = SINR_calc (3,random_list3{timestamp,ct},eNB3_x,eNB3_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),random_list_all{timestamp,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            mult=1;
+            for k=1:size(SINR_D1_rand{timestamp,ct},1)
+                mult=mult * ( 1 + SINR_D1_rand{timestamp,ct}(k) );
+            end
+            for k=1:size(SINR_D2_rand{timestamp,ct},1)
+                mult=mult * ( 1 + SINR_D2_rand{timestamp,ct}(k) );
+            end
+            for k=1:size(SINR_D3_rand{timestamp,ct},1)
+                mult=mult * ( 1 + SINR_D3_rand{timestamp,ct}(k) );
+            end
+            SE_rand{timestamp,ct}(n,:)=log2( (1+SINR_C1_rand{timestamp,ct})*(1+SINR_C2_rand{timestamp,ct})*(1+SINR_C3_rand{timestamp,ct}) * mult );
+
             %pairs_qtity_mAOS is the same throughout all hops
-            SINR_C_mAOS{2,ct}=[SINR_C_mAOS{2,ct};SINR_C1_mAOS{2,ct};SINR_C2_mAOS{2,ct};SINR_C3_mAOS{2,ct}];
-            SINR_D_mAOS{2,ct}=[SINR_D_mAOS{2,ct};SINR_D1_mAOS{2,ct};SINR_D2_mAOS{2,ct};SINR_D3_mAOS{2,ct}];
-            SINR_C_mAOS_dB{2,ct}=pow2db(SINR_C_mAOS{2,ct});
-            SINR_D_mAOS_dB{2,ct}=pow2db(SINR_D_mAOS{2,ct});
+%             SINR_C_mAOS{timestamp,ct}=[SINR_C_mAOS{timestamp,ct};SINR_C1_mAOS{timestamp,ct};SINR_C2_mAOS{timestamp,ct};SINR_C3_mAOS{timestamp,ct}];
+%             SINR_D_mAOS{timestamp,ct}=[SINR_D_mAOS{timestamp,ct};SINR_D1_mAOS{timestamp,ct};SINR_D2_mAOS{timestamp,ct};SINR_D3_mAOS{timestamp,ct}];
+%             SINR_C_mAOS_dB{timestamp,ct}=pow2db(SINR_C_mAOS{timestamp,ct});
+%             SINR_D_mAOS_dB{timestamp,ct}=pow2db(SINR_D_mAOS{timestamp,ct});
             
-            
+        end %end number_of_timestamps
+% distr_visual(customColormap_char(1),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+%         mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct},...
+%         mAOS_list1{2,ct},mAOS_list2{2,ct},mAOS_list3{2,ct},...
+%         mAOS_list1{3,ct},mAOS_list2{3,ct},mAOS_list3{3,ct})
+        
+%         [SINR_C1_mAOS{2,ct},SINR_D1_mAOS{2,ct}] = SINR_calc (1,mAOS_list1{2,ct},eNB1_x,eNB1_y,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),mAOS_list_all{2,ct},CT_BS_gain1{2,ct},CT_BS_gain2{2,ct},CT_BS_gain3{2,ct});
+%         [SINR_C2_mAOS{2,ct},SINR_D2_mAOS{2,ct}] = SINR_calc (2,mAOS_list2{2,ct},eNB2_x,eNB2_y,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),mAOS_list_all{2,ct},CT_BS_gain1{2,ct},CT_BS_gain2{2,ct},CT_BS_gain3{2,ct});
+%         [SINR_C3_mAOS{2,ct},SINR_D3_mAOS{2,ct}] = SINR_calc (3,mAOS_list3{2,ct},eNB3_x,eNB3_y,CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),mAOS_list_all{2,ct},CT_BS_gain1{2,ct},CT_BS_gain2{2,ct},CT_BS_gain3{2,ct});
+%             mult=1;
+%             for k=1:size(SINR_D1_mAOS{2,ct},1)
+%                 mult=mult * ( 1 + SINR_D1_mAOS{2,ct}(k) );
+%             end
+%             for k=1:size(SINR_D2_mAOS{2,ct},1)
+%                 mult=mult * ( 1 + SINR_D2_mAOS{2,ct}(k) );
+%             end
+%             for k=1:size(SINR_D3_mAOS{2,ct},1)
+%                 mult=mult * ( 1 + SINR_D3_mAOS{2,ct}(k) );
+%             end
+%             SE_mAOS{2,ct}(n,:)=log2( (1+SINR_C1_mAOS{2,ct})*(1+SINR_C2_mAOS{2,ct})*(1+SINR_C3_mAOS{2,ct}) * mult );
+%             %pairs_qtity_mAOS is the same throughout all hops
+%             SINR_C_mAOS{2,ct}=[SINR_C_mAOS{2,ct};SINR_C1_mAOS{2,ct};SINR_C2_mAOS{2,ct};SINR_C3_mAOS{2,ct}];
+%             SINR_D_mAOS{2,ct}=[SINR_D_mAOS{2,ct};SINR_D1_mAOS{2,ct};SINR_D2_mAOS{2,ct};SINR_D3_mAOS{2,ct}];
+%             SINR_C_mAOS_dB{2,ct}=pow2db(SINR_C_mAOS{2,ct});
+%             SINR_D_mAOS_dB{2,ct}=pow2db(SINR_D_mAOS{2,ct});
+
         D2D_user_list1=D2Ds_left1; %!!! should be at the end
         D2D_user_list2=D2Ds_left2; %output will go on the input of the mAOS
         D2D_user_list3=D2Ds_left3;
+        
+        D2D_user_list1_all_states{1,ct+1}=D2Ds_left1;
+        D2D_user_list2_all_states{1,ct+1}=D2Ds_left2;
+        D2D_user_list3_all_states{1,ct+1}=D2Ds_left3;
+            Max_Users1=size(D2Ds_left1,1);
+            Max_Users2=size(D2Ds_left2,1);
+            Max_Users3=size(D2Ds_left3,1);
+
         
         if ~(ct==CTs) %generate new CTs for new RB if it is not the last CT set for reuse 
             [CUEs{1,ct+1},~, ~,~, ~,~, ~,...  
             CT_BS_gain1{1,ct+1},CT_BS_gain2{1,ct+1},CT_BS_gain3{1,ct+1}]=generate_3_CTs...
             (eNB1_x,eNB1_y,eNB2_x,eNB2_y,eNB3_x,eNB3_y,Cell_Radius);
-
-            Max_Users1=size(D2Ds_left1,1);
-            Max_Users2=size(D2Ds_left2,1);
-            Max_Users3=size(D2Ds_left3,1);
+            
+%             if drop==1
+%                 Max_Users1_for_rerun=Max_Users1;
+%                 Max_Users2_for_rerun=Max_Users2;
+%                 Max_Users3_for_rerun=Max_Users3;
+%             end
+%             Max_Users1=size(D2Ds_left1,1);
+%             Max_Users2=size(D2Ds_left2,1);
+%             Max_Users3=size(D2Ds_left3,1);
         end
 
     end %end CTs 
-
-
+                
+    %% rerun mAOS if SE is bad
+%     if drop==1
+%         for ct=1:CTs
+%             [mAOS_list1{timestamp_of_drop+1,ct},mAOS_list2{timestamp_of_drop+1,ct},mAOS_list3{timestamp_of_drop+1,ct},...
+%             D2Ds_left1,D2Ds_left2,D2Ds_left3,...
+%             AOS_list1{timestamp_of_drop+1,ct},AOS_list2{timestamp_of_drop+1,ct},AOS_list3{timestamp_of_drop+1,ct},...
+%             SE_mAOS{timestamp_of_drop+1,ct},~,~,~,...
+%             rank_AOS1{ct},rank_AOS2{ct},rank_AOS3{ct},...
+%             rank_mAOS1{ct},rank_mAOS2{ct},rank_mAOS3{ct} ] = ...
+%         multi_cell_AOS ...
+%             (D2D_user_list1_for_rerun,D2D_user_list2_for_rerun,D2D_user_list3_for_rerun, Cell_Radius,D2D_Sep_Max,...
+%             Max_Users1_for_rerun,Max_Users2_for_rerun,Max_Users3_for_rerun, ...
+%             CUE_Exp,DUE_Exp,CUE_SINR_min,DUE_SINR_min,eNB1_x,eNB2_x,eNB3_x,eNB1_y,eNB2_y,eNB3_y,...
+%             CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),...
+%             CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct}); 
+%         
+%         D2D_user_list1_for_rerun=D2Ds_left1; %!!! should be at the end
+%         D2D_user_list2_for_rerun=D2Ds_left2; %output will go on the input of the mAOS
+%         D2D_user_list3_for_rerun=D2Ds_left3;
+%             Max_Users1_for_rerun=size(D2Ds_left1,1);
+%             Max_Users2_for_rerun=size(D2Ds_left2,1);
+%             Max_Users3_for_rerun=size(D2Ds_left3,1);
+%         end % end CTs for rerun
+%         
+% %         SE_mAOS{timestamp_of_drop+2:end,:}=[];
+%     end % end if there were drop
 end %end no_runs     
-    
+
+%% plot SE vs time
+    timeline(1,1)=0;
+    for tl=2:number_of_timestamps
+        timeline(tl,1)=timeline(tl-1,1)+time; 
+    end
+    for ct=1:CTs %remove cases where pairs_qtity_mAOS<15
+        for n=no_runs:-1:1 
+            if pairs_qtity_mAOS{1,ct}(n)<15
+                pairs_qtity_mAOS{1,ct}(n)=[];
+                for timestamp=1:number_of_timestamps 
+                    SE_mAOS{timestamp,ct}(n)=[];
+                end    
+            end       
+        end
+    end
+    for ct=1:CTs
+    	for timestamp=1:number_of_timestamps 
+            SE_mAOS_av(timestamp,ct)=mean(SE_mAOS{timestamp,ct}); 
+            SE_rand_av(timestamp,ct)=mean(SE_rand{timestamp,ct});
+        end
+    end
+    %% 
+    figure
+    for ct=1:CTs
+        plot (timeline, SE_mAOS_av(:,ct), '-o','Color',customColormap(ct,:),'linewidth',1);
+%         plot (timeline(1:timestamp_of_drop+1), SE_mAOS_av(1:timestamp_of_drop+1,ct), '-o','Color',customColormap(ct,:),'linewidth',1);
+        if ct==1
+            hold on
+        end
+        plot (timeline, SE_rand_av(:,ct), ':o','Color',customColormap(ct,:),'linewidth',1);  
+    end
+    ylim([0 200]);
+    xlim([0 number_of_timestamps*time]);
+       yline(147,'g','LineStyle', '--'); %av SE for 15 pairs in mAOS
+       yline(110.25,'r','LineStyle', '--'); 
+    grid on
+    legend('mAOS RB1','random RB1','mAOS RB2','random RB2','mAOS RB3','random RB3','av. SE for 15 pairs','av. SE for 15 pairs-25%' );
+    xlabel('Time (sec)','FontName','Arial','FontSize',14);
+    ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
+    title("Averaged SE drop over "+no_runs+" iteration(s)");
+  
 
 
 %% PLOTS
 %CDF DT
-figure
-xlim([0 50]);
-hold on
-for ct=1:CTs
-    dotted_SINR_D(ct)=cdfplot(SINR_D_rand_all_dB{1,ct}); %random
-    set( dotted_SINR_D(ct), 'LineStyle', ':','Color',customColormap(ct,:));
-    
-    solid_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{1,ct}); %mAOS
-    set( solid_SINR_D(ct),'Color',customColormap(ct,:));
-
-    dashed_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{2,ct}); %mAOS+hop
-    set( dashed_SINR_D(ct), 'LineStyle', '--','Color',customColormap(ct,:));
-end
-xline(15,'g'); %outage probability
-grid on
-legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
-xlabel('DT SINR (dB)','FontName','Arial','FontSize',14);
-ylabel('CDF','FontName','Arial','FontSize',14);
-
-%CDF CT
-figure
-xlim([0 50]);
-hold on
-for ct=1:CTs
-    dotted_SINR_C(ct)=cdfplot(SINR_C_rand_all_dB{1,ct}); %random
-    set( dotted_SINR_C(ct), 'LineStyle', ':','Color',customColormap(ct,:));
-
-    solid_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{1,ct});
-    set( solid_SINR_C(ct),'Color',customColormap(ct,:));
-
-    dashed_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{2,ct});
-    set( dashed_SINR_C(ct), 'LineStyle', '--','Color',customColormap(ct,:));
-end
-xline(6,'g'); %outage probability
-grid on
-legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
-xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
-ylabel('CDF','FontName','Arial','FontSize',14);
-
+% figure
+% xlim([0 50]);
+% hold on
+% for ct=1:CTs
+%     dotted_SINR_D(ct)=cdfplot(SINR_D_rand_all_dB{1,ct}); %random
+%     set( dotted_SINR_D(ct), 'LineStyle', ':','Color',customColormap(ct,:));
+%     
+%     solid_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{1,ct}); %mAOS
+%     set( solid_SINR_D(ct),'Color',customColormap(ct,:));
+% 
+%     dashed_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{2,ct}); %mAOS+hop
+%     set( dashed_SINR_D(ct), 'LineStyle', '--','Color',customColormap(ct,:));
+% end
+% xline(15,'g'); %outage probability
+% grid on
+% legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
+% xlabel('DT SINR (dB)','FontName','Arial','FontSize',14);
+% ylabel('CDF','FontName','Arial','FontSize',14);
+% 
+% %CDF CT
+% figure
+% xlim([0 50]);
+% hold on
+% for ct=1:CTs
+%     dotted_SINR_C(ct)=cdfplot(SINR_C_rand_all_dB{1,ct}); %random
+%     set( dotted_SINR_C(ct), 'LineStyle', ':','Color',customColormap(ct,:));
+% 
+%     solid_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{1,ct});
+%     set( solid_SINR_C(ct),'Color',customColormap(ct,:));
+% 
+%     dashed_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{2,ct});
+%     set( dashed_SINR_C(ct), 'LineStyle', '--','Color',customColormap(ct,:));
+% end
+% xline(6,'g'); %outage probability
+% grid on
+% legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
+% xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
+% ylabel('CDF','FontName','Arial','FontSize',14);
+% 
 %SE
-figure
-for ct=1:CTs %append 0,0 value for better representation
-   mean_values_random{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_random{1,ct},SE_rand{1,ct});
-   mean_values_random{1,ct}=[0 0; mean_values_random{1,ct}];
-   plot(mean_values_random{1,ct}(:,1),mean_values_random{1,ct}(:,2),':o','linewidth',1,'Color',customColormap(ct,:));
-   hold on
-   mean_values{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{1,ct});
-   mean_values{1,ct}=[0 0; mean_values{1,ct}];
-   plot(mean_values{1,ct}(:,1),mean_values{1,ct}(:,2),'-o','linewidth',1,'Color',customColormap(ct,:));
-   
-   mean_values{2,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{2,ct});
-   mean_values{2,ct}=[0 0; mean_values{2,ct}];
-   plot(mean_values{2,ct}(:,1),mean_values{2,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
-
-   yline(147,'g'); %av SE 
-   xline(16,'g'); %av # of pairs
-end
-grid on
-legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','av. SE & # of pairs');
-xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
-ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
+% figure
+% for ct=1:CTs 
+%    mean_values_random{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_random{1,ct},SE_rand{1,ct});
+%    mean_values_random{1,ct}=[0 0; mean_values_random{1,ct}];%append 0,0 value for better representation
+%    plot(mean_values_random{1,ct}(:,1),mean_values_random{1,ct}(:,2),':o','linewidth',1,'Color',customColormap(ct,:));
+%    hold on
+%    mean_values{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{1,ct});
+%    mean_values{1,ct}=[0 0; mean_values{1,ct}];
+%    plot(mean_values{1,ct}(:,1),mean_values{1,ct}(:,2),'-o','linewidth',1,'Color',customColormap(ct,:));
+%    
+%    mean_values{2,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{1,ct});
+%    mean_values{2,ct}=[0 0; mean_values{2,ct}];
+%    plot(mean_values{2,ct}(:,1),mean_values{2,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
+% 
+%    yline(147,'g'); %av SE 
+%    xline(15,'g'); %av # of pairs
+% end
+% grid on
+% legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','av. SE & # of pairs');
+% xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
+% ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
 
 
 
 
 
 %% FUNCTIONS
+function [theta]=reverse_outside_pairs(D2D_user_list1_some_state,D2D_user_list2_some_state,D2D_user_list3_some_state,theta,eNBs,Cell_Radius)
+     for ji=1:size(D2D_user_list1_some_state,1)
+        dist_from_eNB=distance_my_func(D2D_user_list1_some_state(ji,1),D2D_user_list1_some_state(ji,2),eNBs(1,1),eNBs(1,2)); %only Tx user
+        if dist_from_eNB>Cell_Radius 
+            theta{1}(ji)=theta{1}(ji)+pi;
+        end
+     end
+    for ji=1:size(D2D_user_list2_some_state,1)
+        dist_from_eNB=distance_my_func(D2D_user_list2_some_state(ji,1),D2D_user_list2_some_state(ji,2),eNBs(2,1),eNBs(2,2)); %only Tx user
+        if dist_from_eNB>Cell_Radius 
+            theta{2}(ji)=theta{2}(ji)+pi;
+        end
+    end
+    for ji=1:size(D2D_user_list3_some_state,1)
+        dist_from_eNB=distance_my_func(D2D_user_list3_some_state(ji,1),D2D_user_list3_some_state(ji,2),eNBs(3,1),eNBs(3,2)); %only Tx user
+        if dist_from_eNB>Cell_Radius 
+            theta{3}(ji)=theta{3}(ji)+pi;
+        end
+    end
+end 
+function [list_moved]=move_list_w_speed(list,theta,distance,number_of_timestamps)
+    for i=1:size(list,1)
+        list_moved(i,1) = distance*cos(theta(i)) + list(i,1) ;
+        list_moved(i,2) = distance*sin(theta(i)) + list(i,2) ;
+        list_moved(i,3) = distance*cos(theta(i)) + list(i,3) ;
+        list_moved(i,4) = distance*sin(theta(i)) + list(i,4) ;
+    end
+end
 function [list_moved]=move_list(list,mobility,Cell_Radius) 
     for i=1:size(list,1)
         theta_= 2*pi*rand(1,1);
@@ -376,7 +575,8 @@ function [AOS_user_list1_upd,AOS_user_list2_upd,AOS_user_list3_upd,...
     D2Ds_left1,D2Ds_left2,D2Ds_left3,...
     AOS_user_list1,AOS_user_list2,AOS_user_list3,...
     SE_new_AOS,SINR_C_new_all_AOS_dB,SINR_D_i_new_all_AOS_dB,numbers_of_pairs_new_AOS,...
-    rank_AOS1,rank_AOS2,rank_AOS3]=...
+    rank_AOS1,rank_AOS2,rank_AOS3,...
+    rank_mAOS1,rank_mAOS2,rank_mAOS3]=...
     multi_cell_AOS...
     (user_list1,user_list2,user_list3,...
     Cell_Radius,D2D_Sep_Max,...
@@ -445,12 +645,29 @@ function [AOS_user_list1_upd,AOS_user_list2_upd,AOS_user_list3_upd,...
     [AOS_user_list3_upd,min_index31,min_index32] = forbidden_region_DUE (AOS_user_list3_upd, min_index31, ...
                                                         AOS_user_list1_upd, min_index13,DUE_SINR_min,DUE_Exp, ...
                                                                         AOS_user_list2_upd); 
+    mAOS_list_all_initial=[AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
+    AOS_user_list_all_new=[AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
+    
+    %!!! here # of selected pairs is now fixed to be 15 at maximum
+    while size(AOS_user_list_all_new,1)>15
+        if size(AOS_user_list1_upd,1)>5
+            AOS_user_list1_upd(end,:)=[];
+        end
+        if size(AOS_user_list2_upd,1)>5
+            AOS_user_list2_upd(end,:)=[];
+        end
+        if size(AOS_user_list3_upd,1)>5
+            AOS_user_list3_upd(end,:)=[];
+        end            
+        AOS_user_list_all_new= [AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
+    end
+    %
+    
     n=1;
     numbers_of_pairs_new_AOS(n,1) = size(AOS_user_list1_upd,1)+size(AOS_user_list2_upd,1)+size(AOS_user_list3_upd,1);
         
     CT_user_list_all=[CUE1_x,CUE1_y;CUE2_x,CUE2_y;CUE3_x,CUE3_y];
     AOS_user_list_all_raw= [AOS_user_list1;AOS_user_list2;AOS_user_list3];
-    AOS_user_list_all_new= [AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
         
     [SINR_C1_new_AOS,SINR_D_i1_new_AOS] = SINR_calc (1,AOS_user_list1_upd,eNB1_x,eNB1_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,AOS_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
     [SINR_C2_new_AOS,SINR_D_i2_new_AOS] = SINR_calc (2,AOS_user_list2_upd,eNB2_x,eNB2_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,AOS_user_list_all_new,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3);
@@ -476,9 +693,16 @@ function [AOS_user_list1_upd,AOS_user_list2_upd,AOS_user_list3_upd,...
     D2Ds_left1 = setdiff(user_list1,AOS_user_list1_upd,'rows');
     D2Ds_left2 = setdiff(user_list2,AOS_user_list2_upd,'rows');
     D2Ds_left3 = setdiff(user_list3,AOS_user_list3_upd,'rows');
+    
+    rank_mAOS1= ismember(user_list1,AOS_user_list1_upd); %find indeces of the selected pairs
+    rank_mAOS1=rank_mAOS1(:,1);
+    rank_mAOS2= ismember(user_list2,AOS_user_list2_upd); %after moving this selection matrix remains the same
+    rank_mAOS2=rank_mAOS2(:,1);
+    rank_mAOS3= ismember(user_list3,AOS_user_list3_upd);
+    rank_mAOS3=rank_mAOS3(:,1);
 end
 
-function [ans] = dist (x1, y1, x2, y2) 
+function [ans] = distance_my_func(x1, y1, x2, y2) 
     ans= sqrt((abs(x1-x2))^2+(abs(y1-y2))^2);
 end
 function [SINR_C,SINR_D_i] = SINR_calc (numb_cell,user_list,eNB_x,eNB_y,CUE1_x,CUE1_y,CUE2_x,CUE2_y,CUE3_x,CUE3_y,user_list_all,CT_BS_gain1,CT_BS_gain2,CT_BS_gain3)
@@ -563,7 +787,7 @@ function [min_index] = closest_pair_to_CT (user_list, CUE_x, CUE_y)
            pairs_list(i,2)=(user_list(i,2)+user_list(i,4))/2;
        end
        for i=1:size(pairs_list,1)
-           dist_matrix(i)=dist(pairs_list(i,1),pairs_list(i,2),CUE_x,CUE_y); %(x1, y1, x2, y2)
+           dist_matrix(i)=distance_my_func(pairs_list(i,1),pairs_list(i,2),CUE_x,CUE_y); %(x1, y1, x2, y2)
        end
        [min_val,min_index]=min(dist_matrix);
    end
@@ -579,10 +803,10 @@ function [PRS_user_list, min_index, min_index_to_other_cell] = forbidden_region_
             min_index_to_other_cell=-1;
             break
         end 
-        l=dist(PRS_user_list(min_index,1),PRS_user_list(min_index,2), ... 
+        l=distance_my_func(PRS_user_list(min_index,1),PRS_user_list(min_index,2), ... 
             PRS_user_list(min_index,3),PRS_user_list(min_index,4));            %Tx DT- Rx DT
-        r0=dist(CUE_x,CUE_y,eNB_x,eNB_y);                                     %CT-BS
-        r1=dist(PRS_user_list(min_index,1),PRS_user_list(min_index,2), ... 
+        r0=distance_my_func(CUE_x,CUE_y,eNB_x,eNB_y);                                     %CT-BS
+        r1=distance_my_func(PRS_user_list(min_index,1),PRS_user_list(min_index,2), ... 
             eNB_x,eNB_y);                                                   %%% Tx DT - BS
         R=(SINR_C ^(1/DUE_Exp))*(SINR_D ^(1/CUE_Exp)) * r0^(CUE_Exp/DUE_Exp) * l / r1^(CUE_Exp/DUE_Exp);
         if R >= r1 %forbidden region is violated
@@ -612,7 +836,7 @@ function [min_index] = closest_pairs_d2d (user_list1, user_list2)
        end
        for i=1:size(pairs_list1,1)
            for j=1:size(pairs_list2,1)
-               dist_matrix(i,j)=dist(pairs_list1(i,1),pairs_list1(i,2),pairs_list2(j,1),pairs_list2(j,2)); %(x1, y1, x2, y2)
+               dist_matrix(i,j)=distance_my_func(pairs_list1(i,1),pairs_list1(i,2),pairs_list2(j,1),pairs_list2(j,2)); %(x1, y1, x2, y2)
            end
        end
        minimum = min(min(dist_matrix)); %finding the min value in matrix, taking its x & y
@@ -637,11 +861,11 @@ function [PRS_user_list1, min_index1, min_index_to_other_cell] = forbidden_regio
             [min_index_to_other_cell] = closest_pairs_d2d (PRS_user_list1,PRS_user_list_other);
             break
         end
-        l=dist(PRS_user_list1(min_index1,1),PRS_user_list1(min_index1,2), ... %Tx DT- Rx DT of pair1:can be deleted
+        l=distance_my_func(PRS_user_list1(min_index1,1),PRS_user_list1(min_index1,2), ... %Tx DT- Rx DT of pair1:can be deleted
             PRS_user_list1(min_index1,3),PRS_user_list1(min_index1,4)); 
-        r0=dist(PRS_user_list2(min_index2,1),PRS_user_list2(min_index2,2), ... %Tx DT- Rx DT of pair2
+        r0=distance_my_func(PRS_user_list2(min_index2,1),PRS_user_list2(min_index2,2), ... %Tx DT- Rx DT of pair2
             PRS_user_list2(min_index2,3),PRS_user_list2(min_index2,4)); 
-        r1=dist(PRS_user_list1(min_index1,1),PRS_user_list1(min_index1,2), ... %pair1 Tx - pair2 Rx 
+        r1=distance_my_func(PRS_user_list1(min_index1,1),PRS_user_list1(min_index1,2), ... %pair1 Tx - pair2 Rx 
             PRS_user_list2(min_index2,3),PRS_user_list2(min_index2,4)); 
         R= (SINR_D ^(2/DUE_Exp)) * l * r0 / r1; %R is around pair1
         if R >= r1 %forbidden region is violated
@@ -682,9 +906,9 @@ function [D2D_user_list,N_selected_PC] = single_cell_PC_Abu_channel(D2D_user_lis
         %DT
         for i=1:size(D2D_user_list,1)
             sum2=0; %sum over DTs interference towards i-th DTrx    
-            for j=1:size(D2D_user_list,1)
-                if (j~=i)
-                    sum2= sum2 + Pd * LTE_channel_model_indoor_hotspot_NLOS(D2D_user_list(j,1),D2D_user_list(j,2),D2D_user_list(i,3),D2D_user_list(i,4));           
+            for ji=1:size(D2D_user_list,1)
+                if (ji~=i)
+                    sum2= sum2 + Pd * LTE_channel_model_indoor_hotspot_NLOS(D2D_user_list(ji,1),D2D_user_list(ji,2),D2D_user_list(i,3),D2D_user_list(i,4));           
                 end
             end
             DT_rx_power(i) = Pd * LTE_channel_model_indoor_hotspot_NLOS(D2D_user_list(i,1),D2D_user_list(i,2),D2D_user_list(i,3),D2D_user_list(i,4)) / ...
