@@ -29,7 +29,7 @@ time=10; %sec between timestamps
 distance=velocity*time;
 number_of_timestamps=20;
 CTs = 1; % same # of CTs for each cell
-no_runs=1; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
+no_runs=50; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
 
 for ct=1:CTs
     SINR_C_mAOS{1,ct}=[];
@@ -48,8 +48,9 @@ for ct=1:CTs
     SINR_D_rand_all_dB{1,ct}=[];SINR_D_rand_all_dB{2,ct}=[];
 end
 
-
-for n=1:no_runs
+n=1;
+while n<=no_runs
+%     while 1 %redo same loop until pairs_qtity_mAOS==15
     to_disp=['n# ',num2str(n)];
     disp(to_disp);
 %     Max_Users1=Max_Users; Max_Users2=Max_Users; Max_Users3=Max_Users;
@@ -160,6 +161,10 @@ for n=1:no_runs
         CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),...
         CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct}); 
         
+        numbers_of_pairs_new_AOS        
+        if numbers_of_pairs_new_AOS~=15
+            break   
+        end
         AOS_list1{1,ct}=AOS_user_list1;
         AOS_list2{1,ct}=AOS_user_list2;
         AOS_list3{1,ct}=AOS_user_list3;
@@ -177,10 +182,9 @@ for n=1:no_runs
 %            %AOS_list1{1,ct},AOS_list2{1,ct},AOS_list3{1,ct},...
 %         end
         
+        %first timestamp, next will be2:end
+        pairs_qtity_mAOS{1,ct}(n,1)=numbers_of_pairs_new_AOS; %if more than 15, mAOS takes only 15
         SE_mAOS{1,ct}(n,:)=SE_new_AOS;
-        pairs_qtity_mAOS{1,ct}(n,1)=numbers_of_pairs_new_AOS %if more than 15, mAOS takes only 15
-%         if pairs_qtity_mAOS{1,ct}(n,1)
-        %here try to  move to the next iter if <15
         SINR_C_mAOS_dB{1,ct}=[SINR_C_mAOS_dB{1,ct};SINR_C_new_all_AOS_dB];
         SINR_D_mAOS_dB{1,ct}=[SINR_D_mAOS_dB{1,ct};SINR_D_i_new_all_AOS_dB];        
        
@@ -237,17 +241,19 @@ for n=1:no_runs
             SE_mAOS{timestamp,ct}(n,:)=log2( (1+SINR_C1_mAOS{timestamp,ct})*(1+SINR_C2_mAOS{timestamp,ct})*(1+SINR_C3_mAOS{timestamp,ct}) * mult );
             
 %drop
-            if (SE_mAOS{timestamp,ct}(n,:)<SE_mAOS{1,ct}(n,:)*(100-SE_percent)/100)&&drop==0
-               timestamp_of_drop= timestamp;
-               drop=1;
-               SE_lower_bound(ct)=SE_mAOS{1,ct}(n,:)*(100-SE_percent)/100;
-               SE_upper_bound(ct)=SE_mAOS{1,ct}(n,:);
-                D2D_user_list1_for_rerun=D2D_user_list1;
-                D2D_user_list2_for_rerun=D2D_user_list2;
-                D2D_user_list3_for_rerun=D2D_user_list3;   
-%                 Max_Users1_for_rerun=Max_Users1;
-%                 Max_Users2_for_rerun=Max_Users2;
-%                 Max_Users3_for_rerun=Max_Users3;
+            if drop==0
+                if(SE_mAOS{timestamp,ct}(n,:)<SE_mAOS{1,ct}(n,:)*(100-SE_percent)/100)
+                   timestamp_of_drop= timestamp;
+                   drop=1;
+%                    SE_lower_bound(n,ct)=SE_mAOS{n,ct}(n,:)*(100-SE_percent)/100;
+%                    SE_upper_bound(n,ct)=SE_mAOS{n,ct}(n,:);
+                    D2D_user_list1_for_rerun=D2D_user_list1;
+                    D2D_user_list2_for_rerun=D2D_user_list2;
+                    D2D_user_list3_for_rerun=D2D_user_list3;   
+    %                 Max_Users1_for_rerun=Max_Users1;
+    %                 Max_Users2_for_rerun=Max_Users2;
+    %                 Max_Users3_for_rerun=Max_Users3;
+                end
             end
             
 %SE random
@@ -303,9 +309,6 @@ for n=1:no_runs
         D2D_user_list1_all_states{1,ct+1}=D2Ds_left1;
         D2D_user_list2_all_states{1,ct+1}=D2Ds_left2;
         D2D_user_list3_all_states{1,ct+1}=D2Ds_left3;
-%             Max_Users1=size(D2Ds_left1,1);
-%             Max_Users2=size(D2Ds_left2,1);
-%             Max_Users3=size(D2Ds_left3,1);
 
         
         if ~(ct==CTs) %generate new CTs for new RB if it is not the last CT set for reuse 
@@ -313,14 +316,6 @@ for n=1:no_runs
             CT_BS_gain1{1,ct+1},CT_BS_gain2{1,ct+1},CT_BS_gain3{1,ct+1}]=generate_3_CTs...
             (eNB1_x,eNB1_y,eNB2_x,eNB2_y,eNB3_x,eNB3_y,Cell_Radius);
             
-%             if drop==1
-%                 Max_Users1_for_rerun=Max_Users1;
-%                 Max_Users2_for_rerun=Max_Users2;
-%                 Max_Users3_for_rerun=Max_Users3;
-%             end
-%             Max_Users1=size(D2Ds_left1,1);
-%             Max_Users2=size(D2Ds_left2,1);
-%             Max_Users3=size(D2Ds_left3,1);
         end
 
     end %end CTs 
@@ -343,13 +338,14 @@ for n=1:no_runs
         D2D_user_list1_all_states{timestamp_of_drop,ct}=D2Ds_left1; %!!! should be at the end
         D2D_user_list2_all_states{timestamp_of_drop,ct}=D2Ds_left2; %output will go on the input of the mAOS
         D2D_user_list3_all_states{timestamp_of_drop,ct}=D2Ds_left3;
-%             Max_Users1_for_rerun=size(D2Ds_left1,1);
-%             Max_Users2_for_rerun=size(D2Ds_left2,1);
-%             Max_Users3_for_rerun=size(D2Ds_left3,1);
         end % end CTs for rerun
         
 %         SE_mAOS{timestamp_of_drop+2:end,:}=[];
     end % end if there were drop
+            
+    if numbers_of_pairs_new_AOS==15
+        n=n+1; % iter increment
+    end
 end %end no_runs    
 %% 
 distr_visual(customColormap_char(1),CUEs{1,1}(1,1),CUEs{1,1}(1,2),CUEs{1,1}(2,1),CUEs{1,1}(2,2),CUEs{1,1}(3,1),CUEs{1,1}(3,2),... %plot the distribution
@@ -395,8 +391,11 @@ distr_visual(customColormap_char(1),CUEs{1,1}(1,1),CUEs{1,1}(1,2),CUEs{1,1}(2,1)
             hold on
         end
 %         plot (timeline, SE_rand_av(:,ct), ':o','Color',customColormap(ct,:),'linewidth',1);  
-          yline(SE_upper_bound(ct),'g','LineStyle', '--'); 
-          yline(SE_lower_bound(ct),'r','LineStyle', '--'); 
+
+%           SE_upper_bound_av(ct)=mean(SE_upper_bound(:,ct));
+          yline(SE_mAOS_av(1,1),'g','LineStyle', '--');
+%           SE_lower_bound_av(ct)=mean(SE_lower_bound(:,ct));
+          yline(SE_mAOS_av(1,1)*(100-SE_percent)/100,'r','LineStyle', '--'); 
     end
     ylim([0 200]);
     xlim([0 number_of_timestamps*time]);
