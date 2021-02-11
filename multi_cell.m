@@ -28,8 +28,8 @@ velocity=velocity_kmh*5/18; %m/sec
 time=10; %sec between timestamps
 distance=velocity*time;
 number_of_timestamps=20; %scatter of n=1 can plot 20 timestamps max
-CTs = 1; % same # of CTs for each cell
-no_runs=50; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
+CTs = 3; % same # of CTs for each cell
+no_runs=250; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
 
 for ct=1:CTs
     SINR_C_mAOS{1,ct}=[];
@@ -151,8 +151,8 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
         CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct}); 
         
         numbers_of_pairs_new_AOS        
-        if ct==1&&numbers_of_pairs_new_AOS~=15
-            break   
+        if numbers_of_pairs_new_AOS~=15&&ct==1 % delete second part if 15 pairs for all RBs needed
+            break   %rerun current loop if less than 15 pairs selected
         end
         AOS_list1{1,ct}=AOS_user_list1;
         AOS_list2{1,ct}=AOS_user_list2;
@@ -236,7 +236,7 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
                    drop=1;
                 else
                     if timestamp==number_of_timestamps 
-                    disp("last timestamp "+timestamp+" , SE didn't fall, n="+n);    
+                    disp("last timestamp "+timestamp+" , SE didn't fall on n="+n);    
                     end
                 end
             end
@@ -300,7 +300,7 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
         %% rerun mAOS if SE is bad
          if drop==1
               [mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
-                D2Ds_left1,D2Ds_left2,D2Ds_left3,...
+                ~,~,~,... %D2Ds_left1,D2Ds_left2,D2Ds_left3,...
                 AOS_list1_rerun{1,ct},AOS_list2_rerun{1,ct},AOS_list3_rerun{1,ct},...
                 SE_mAOS_rerun(n,ct),~,~,~,...
                 ~,~,~,...
@@ -325,7 +325,7 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
 
     end %end CTs 
             
-    if numbers_of_pairs_new_AOS==15||ct~=1
+    if numbers_of_pairs_new_AOS==15||ct~=1 % delete second part if 15 pairs for all RBs needed
         n=n+1; % iter increment
     end
     
@@ -339,7 +339,7 @@ distr_visual(customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(
 
 distr_visual_to_timestamp(ct,customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
         mAOS_list1,mAOS_list2,mAOS_list3,timestamp_of_drop(1,ct));
-       
+%can cause errors if SE didn't fall over number_of_timestamps or SE fell at 0 timestamp      
 distr_visual(customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
     D2D_user_list1_all_states{timestamp_of_drop(1,ct),1},D2D_user_list2_all_states{timestamp_of_drop(1,ct),1},D2D_user_list3_all_states{timestamp_of_drop(1,ct),1},...
     mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
@@ -365,10 +365,12 @@ end
             SE_mAOS_av(timestamp,ct)=mean(SE_mAOS{timestamp,ct}); 
             SE_rand_av(timestamp,ct)=mean(SE_rand{timestamp,ct});
         end
-        %yet for 1 ct only
-        timestamp_of_drop=timestamp_of_drop(timestamp_of_drop~=0); %remove 0 values
-        timestamp_of_drop_av(ct)=round(mean(timestamp_of_drop(:,ct))); %mean timestamp over n iterations
-        SE_mAOS_rerun_av(ct)=mean(SE_mAOS_rerun(:,ct)); % mean restore of SE after mAOS rerun
+        timestamp_of_drop_celled{ct}=timestamp_of_drop(:,ct);
+        timestamp_of_drop_celled{ct}=timestamp_of_drop_celled{ct}(timestamp_of_drop_celled{ct}~=0); %remove 0 values
+        timestamp_of_drop_av(ct)=round(mean(timestamp_of_drop_celled{ct})); %mean timestamp over n iterations
+        SE_mAOS_rerun_celled{ct}=SE_mAOS_rerun(:,ct);
+        SE_mAOS_rerun_celled{ct}=SE_mAOS_rerun_celled{ct}(SE_mAOS_rerun_celled{ct}~=0);
+        SE_mAOS_rerun_av(ct)=mean(SE_mAOS_rerun_celled{ct}); % mean restore of SE after mAOS rerun
     end
     %% 
     figure
@@ -378,18 +380,21 @@ end
         if ct==1
             hold on
         end
-        plot (timeline(1:timestamp_of_drop_av(ct)), SE_rand_av(1:timestamp_of_drop_av(ct),ct), ':o','Color',customColormap(ct,:),'linewidth',1);
-        xline((timestamp_of_drop_av(ct)-1)*time, '-.','Color',customColormap(ct,:));
+        plot (timeline(1:timestamp_of_drop_av(ct)), SE_rand_av(1:timestamp_of_drop_av(ct),ct), '--o','Color',customColormap(ct,:),'linewidth',1);
+        xline((timestamp_of_drop_av(ct)-1)*time, ':','Color',customColormap(ct,:),'linewidth',1.5);
     end
-          yline(SE_mAOS_av(1,1),'g','LineStyle', '--');
-          yline(SE_mAOS_av(1,1)*(100-SE_percent)/100,'g','LineStyle', '--'); 
+          yline(SE_mAOS_av(1,1),'g','LineStyle', '-','linewidth',1.5);
+          yline(SE_mAOS_av(1,1)*(100-SE_percent)/100,'g','LineStyle', '--','linewidth',1.5); 
     ylim([0 200]);
-    xlim([0 number_of_timestamps*time]);
+    xlim([0 120]); %number_of_timestamps*time
     grid on
-%     legend('mAOS RB1 (15 pairs selected)','random RB1','mAOS RB2','random RB2','mAOS RB3','random RB3','av. SE for 15 pairs','av. SE for 15 pairs-25%' );
+    legend('mAOS RB1 (15 pairs selected)','random RB1','av. time for undesired SE drop of RB1',...
+        'mAOS RB2','random RB2','av. time for undesired SE drop of RB2',...
+        'mAOS RB3','random RB3','av. time for undesired SE drop of RB3',...
+        'av. initial SE for 15 pairs','av. initial SE for 15 pairs-25%' );
     xlabel('Time (sec)','FontName','Arial','FontSize',14);
     ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
-    title("Averaged SE drop over "+no_runs+" iteration(s)");
+    title("Averaged SE drop and mAOS rerun over "+no_runs+" iteration(s) for D2Ds at "+velocity_kmh+" km/h speed");
   
 
 
