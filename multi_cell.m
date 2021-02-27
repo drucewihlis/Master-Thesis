@@ -12,8 +12,8 @@ eNB1_x = 200; eNB1_y = 200;
 eNB2_x = 400; eNB2_y = 200+200*sqrt(3);
 eNB3_x = 600; eNB3_y = 200;
 eNBs=[eNB1_x eNB1_y; eNB2_x eNB2_y; eNB3_x eNB3_y];
-customColormap = [1 0 0  ;1 0 1 ;0 1 1; 1 1 0; 0 0 1 ; 0 1 0]; %r m c y b g
-customColormap_char = ['r'; 'm'; 'c' ;'y'; 'b'; 'g' ]; 
+customColormap = [1 0 0  ;1 0 1 ;0 0 1; 1 1 0; 0 1 1 ; 0 1 0]; %r m b y c g 
+customColormap_char = ['r'; 'm'; 'b' ;'y'; 'c'; 'g' ]; 
 
 Cell_Radius = 200;
 D2D_Sep_Max = 0.1*Cell_Radius;
@@ -29,7 +29,7 @@ time=10; %sec between timestamps
 distance=velocity*time;
 number_of_timestamps=20; %scatter of n=1 can plot 20 timestamps max
 CTs = 3; % same # of CTs for each cell
-no_runs=250; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
+no_runs=1; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
 
 for ct=1:CTs
     SINR_C_mAOS{1,ct}=[];
@@ -48,12 +48,14 @@ for ct=1:CTs
     SINR_D_rand_all_dB{1,ct}=[];SINR_D_rand_all_dB{2,ct}=[];
 end
 
-n=1;
+n=1; % for strictly 15 pairs to RB1      
 while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
+    
+% for n=1:no_runs
     to_disp=['n# ',num2str(n)];
     disp(to_disp);
     
-    drop=0;
+    drop=0; %initialize at each iter 0 drop
     %distibution of users in 3 cells
     D2D_user_list1 = LTE_UE_uniform_distribution_upd(eNB1_x,eNB1_y,Cell_Radius,D2D_Sep_Max, Max_Users); %Tx_x,Tx_y,Rx_x,Rx_y
     D2D_user_list2 = LTE_UE_uniform_distribution_upd(eNB2_x,eNB2_y,Cell_Radius,D2D_Sep_Max, Max_Users);
@@ -97,7 +99,7 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
             case 2
                 color=customColormap_char(2); %m
             case 3
-                color=customColormap_char(3); %c
+                color=customColormap_char(5); %b
         end
         
         %% RANDOM
@@ -150,10 +152,13 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
         CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),...
         CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct}); 
         
-        numbers_of_pairs_new_AOS        
-        if numbers_of_pairs_new_AOS~=15&&ct==1 % delete second part if 15 pairs for all RBs needed
+        numbers_of_pairs_new_AOS   
+        
+        % for 15 pairs to RB1
+        if numbers_of_pairs_new_AOS~=15&&ct==1 % delete second part if 15 pairs for all RBs needed, drastically enlarges comp. time
             break   %rerun current loop if less than 15 pairs selected
         end
+        
         AOS_list1{1,ct}=AOS_user_list1;
         AOS_list2{1,ct}=AOS_user_list2;
         AOS_list3{1,ct}=AOS_user_list3;
@@ -161,42 +166,20 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
         mAOS_list2{1,ct}=AOS_user_list2_upd;
         mAOS_list3{1,ct}=AOS_user_list3_upd;
         mAOS_list_all{1,ct}=[mAOS_list1{1,ct};mAOS_list2{1,ct};mAOS_list3{1,ct}]; %each col here consists of all DTs in 3 cells sharing same RB (1 to 3)
-
-        %visual of mobility+ 1 hop
-%         if (n==1)
-%             distr_visual(color,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-%             D2D_user_list1,D2D_user_list2,D2D_user_list3,...
-%         random_list1{1,ct},random_list2{1,ct},random_list3{1,ct},...
-%             mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct});
-%            %AOS_list1{1,ct},AOS_list2{1,ct},AOS_list3{1,ct},...
-%         end
         
-        %first timestamp, next will be2:end
+        %first timestamp, next will be 2:end
         pairs_qtity_mAOS{1,ct}(n,1)=numbers_of_pairs_new_AOS; %if more than 15, mAOS takes only 15
         SE_mAOS{1,ct}(n,1)=SE_new_AOS;
         SINR_C_mAOS_dB{1,ct}=[SINR_C_mAOS_dB{1,ct};SINR_C_new_all_AOS_dB];
         SINR_D_mAOS_dB{1,ct}=[SINR_D_mAOS_dB{1,ct};SINR_D_i_new_all_AOS_dB];        
        
-     
-    %mobility: 1 hop
-        %no need of it
-        for cell=1:3 %move CT in each of 3 cells 
-            theta_Abu= 2*pi*rand(1,1);
-            moving_dist=mobility*0.01*Cell_Radius*sqrt(rand(1,1));
-            CUEs{2,ct}(cell,1) = moving_dist*cos(theta_Abu) + CUEs{1,ct}(cell,1) ;%x %for now I should use only CUEs{1,ct}
-            CUEs{2,ct}(cell,2) = moving_dist*sin(theta_Abu) + CUEs{1,ct}(cell,2) ;%y
-        end
-        CT_BS_gain1{2,ct} = LTE_channel_model_urban_micro_NLOS(CUEs{2,ct}(1,1),CUEs{2,ct}(1,2),eNB1_x,eNB1_y); 
-        CT_BS_gain2{2,ct} = LTE_channel_model_urban_micro_NLOS(CUEs{2,ct}(2,1),CUEs{2,ct}(2,2),eNB2_x,eNB2_y);
-        CT_BS_gain3{2,ct} = LTE_channel_model_urban_micro_NLOS(CUEs{2,ct}(3,1),CUEs{2,ct}(3,2),eNB3_x,eNB3_y);
-        %
-        
+             
     %% MOVE PAIRS WITH SPEED    
         for timestamp=2:number_of_timestamps                                         
             D2D_user_list1_all_states{timestamp,ct}=move_list_w_speed(D2D_user_list1_all_states{timestamp-1,ct},theta{1},distance,number_of_timestamps);
             D2D_user_list2_all_states{timestamp,ct}=move_list_w_speed(D2D_user_list2_all_states{timestamp-1,ct},theta{2},distance,number_of_timestamps);
             D2D_user_list3_all_states{timestamp,ct}=move_list_w_speed(D2D_user_list3_all_states{timestamp-1,ct},theta{3},distance,number_of_timestamps);
-            theta=reverse_outside_pairs(D2D_user_list1_all_states{timestamp,ct},D2D_user_list2_all_states{timestamp,ct},D2D_user_list3_all_states{timestamp,ct},theta,eNBs,Cell_Radius);
+            theta=reverse_outside_pairs(D2D_user_list1_all_states{timestamp,ct},D2D_user_list2_all_states{timestamp,ct},D2D_user_list3_all_states{timestamp,ct},theta,eNBs,Cell_Radius); %opposite angle if pair goes too far
 
             mAOS_list1{timestamp,ct} = mask (D2D_user_list1_all_states{timestamp,ct},rank_mAOS1{ct}); % select same AOS pairs
             mAOS_list2{timestamp,ct} = mask (D2D_user_list2_all_states{timestamp,ct},rank_mAOS2{ct}); 
@@ -231,12 +214,15 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
             
 %drop
             if drop==0
-                if(SE_mAOS{timestamp,ct}(n,1)<SE_mAOS{1,1}(n,1)*(100-SE_percent)/100)% !!! first RB's SE boundary is the reference
+                SE_lower_bound(1,n)=SE_mAOS{1,1}(n,1)*(100-SE_percent)/100; % !!! first RB's SE boundary at initial timestamp is the reference
+                if(SE_mAOS{timestamp,ct}(n,1)<SE_lower_bound(n))
                    timestamp_of_drop(n,ct)= timestamp;
                    drop=1;
                 else
-                    if timestamp==number_of_timestamps 
-                    disp("last timestamp "+timestamp+" , SE didn't fall on n="+n);    
+                    if timestamp==number_of_timestamps % then do nothing, no rerun
+                    disp("last timestamp "+timestamp+" , SE didn't fall on n="+n);   
+                    %pause
+                    timestamp_of_drop(n,ct)= number_of_timestamps;
                     end
                 end
             end
@@ -299,12 +285,19 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
         
         %% rerun mAOS if SE is bad
          if drop==1
+             
+         if ct==1 %these lists shouldn't keep info between different n
+             mAOS_list1_rerun=[];mAOS_list2_rerun=[];mAOS_list3_rerun=[];
+             SINR_C1_mAOS=[];SINR_C2_mAOS=[];SINR_C3_mAOS=[];
+             SINR_D1_mAOS=[];SINR_D2_mAOS=[];SINR_D3_mAOS=[];
+         end
+         
               [mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
                 ~,~,~,... %D2Ds_left1,D2Ds_left2,D2Ds_left3,...
                 AOS_list1_rerun{1,ct},AOS_list2_rerun{1,ct},AOS_list3_rerun{1,ct},...
-                SE_mAOS_rerun(n,ct),~,~,~,...
+                SE_mAOS_rerun{timestamp_of_drop(n,ct),ct}(n,1),~,~,~,...
                 ~,~,~,...
-                ~,~,~ ] = ...
+                rank_mAOS1{2,ct},rank_mAOS2{2,ct},rank_mAOS3{2,ct} ] = ...
             multi_cell_AOS ...
                 (D2D_user_list1_all_states{timestamp_of_drop(n,ct),ct},...    % here timestamp_of_drop=0 cannot go through ?
                  D2D_user_list2_all_states{timestamp_of_drop(n,ct),ct},...
@@ -312,86 +305,125 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
                 CUE_Exp,DUE_Exp,CUE_SINR_min,DUE_SINR_min,eNB1_x,eNB2_x,eNB3_x,eNB1_y,eNB2_y,eNB3_y,...
                 CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),...
                 CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct}); 
+
+         for timestamp_after_drop=timestamp_of_drop(n,ct)+1:number_of_timestamps %timestamp_of_drop(n,ct)+1 next ts after going up!
+            mAOS_list1_rerun{timestamp_after_drop,ct} = mask (D2D_user_list1_all_states{timestamp_after_drop,ct},rank_mAOS1{2,ct}); % select same AOS pairs
+            mAOS_list2_rerun{timestamp_after_drop,ct} = mask (D2D_user_list2_all_states{timestamp_after_drop,ct},rank_mAOS2{2,ct}); 
+            mAOS_list3_rerun{timestamp_after_drop,ct} = mask (D2D_user_list3_all_states{timestamp_after_drop,ct},rank_mAOS3{2,ct}); 
+            mAOS_list_all_rerun{timestamp_after_drop,ct}=[mAOS_list1_rerun{timestamp_after_drop,ct};mAOS_list2_rerun{timestamp_after_drop,ct};mAOS_list3_rerun{timestamp_after_drop,ct}]; 
             
+            %SE mAOS
+            [SINR_C1_mAOS{timestamp_after_drop,ct},SINR_D1_mAOS{timestamp_after_drop,ct}] = SINR_calc (1,mAOS_list1_rerun{timestamp_after_drop,ct},eNB1_x,eNB1_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2), mAOS_list_all_rerun{timestamp_after_drop,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            [SINR_C2_mAOS{timestamp_after_drop,ct},SINR_D2_mAOS{timestamp_after_drop,ct}] = SINR_calc (2,mAOS_list2_rerun{timestamp_after_drop,ct},eNB2_x,eNB2_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2), mAOS_list_all_rerun{timestamp_after_drop,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            [SINR_C3_mAOS{timestamp_after_drop,ct},SINR_D3_mAOS{timestamp_after_drop,ct}] = SINR_calc (3,mAOS_list3_rerun{timestamp_after_drop,ct},eNB3_x,eNB3_y,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2), mAOS_list_all_rerun{timestamp_after_drop,ct},CT_BS_gain1{1,ct},CT_BS_gain2{1,ct},CT_BS_gain3{1,ct});
+            mult=1;
+            for k=1:size(SINR_D1_mAOS{timestamp_after_drop,ct},1)
+                mult=mult * ( 1 + SINR_D1_mAOS{timestamp_after_drop,ct}(k) );
+            end
+            for k=1:size(SINR_D2_mAOS{timestamp_after_drop,ct},1)
+                mult=mult * ( 1 + SINR_D2_mAOS{timestamp_after_drop,ct}(k) );
+            end
+            for k=1:size(SINR_D3_mAOS{timestamp_after_drop,ct},1)
+                mult=mult * ( 1 + SINR_D3_mAOS{timestamp_after_drop,ct}(k) );
+            end
+            SE_mAOS_rerun{timestamp_after_drop,ct}(n,1)=log2( (1+SINR_C1_mAOS{timestamp_after_drop,ct})*(1+SINR_C2_mAOS{timestamp_after_drop,ct})*(1+SINR_C3_mAOS{timestamp_after_drop,ct}) * mult );
+           
+         end  %end for timestamp_after_drop
+         
             drop=0;
-         end
+         end %end drop
         
         if ~(ct==CTs) %generate new CTs for new RB if it is not the last CT set for reuse 
             [CUEs{1,ct+1},~, ~,~, ~,~, ~,...  
             CT_BS_gain1{1,ct+1},CT_BS_gain2{1,ct+1},CT_BS_gain3{1,ct+1}]=generate_3_CTs...
             (eNB1_x,eNB1_y,eNB2_x,eNB2_y,eNB3_x,eNB3_y,Cell_Radius);
             
-        end
+        end %end if not last ct
 
     end %end CTs 
-            
+    
+     % for strictly 15 pairs to RB1      
     if numbers_of_pairs_new_AOS==15||ct~=1 % delete second part if 15 pairs for all RBs needed
         n=n+1; % iter increment
     end
     
 end %end no_runs    
 %% 
-for ct=1:CTs
-distr_visual(customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-    D2D_user_list1_all_states{1,ct},D2D_user_list2_all_states{1,ct},D2D_user_list3_all_states{1,ct},...
-    mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct},...
-   [],[],[]);
-
-distr_visual_to_timestamp(ct,customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-        mAOS_list1,mAOS_list2,mAOS_list3,timestamp_of_drop(1,ct));
-%can cause errors if SE didn't fall over number_of_timestamps or SE fell at 0 timestamp      
-distr_visual(customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-    D2D_user_list1_all_states{timestamp_of_drop(1,ct),1},D2D_user_list2_all_states{timestamp_of_drop(1,ct),1},D2D_user_list3_all_states{timestamp_of_drop(1,ct),1},...
-    mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
-   [],[],[]);
-end
+% for ct=1:CTs
+% distr_visual(customColormap_char(ct),eNBs,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+%     D2D_user_list1_all_states{1,ct},D2D_user_list2_all_states{1,ct},D2D_user_list3_all_states{1,ct},...
+%     mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct},...
+%    [],[],[]);
+% 
+% distr_visual_to_timestamp(ct,eNBs,customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+%         mAOS_list1,mAOS_list2,mAOS_list3,timestamp_of_drop(1,ct),number_of_timestamps);
+% %can cause errors if SE didn't fall over number_of_timestamps or SE fell at 0 timestamp    
+% 
+% distr_visual(customColormap_char(ct),eNBs,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+%     D2D_user_list1_all_states{timestamp_of_drop(1,ct),1},D2D_user_list2_all_states{timestamp_of_drop(1,ct),1},D2D_user_list3_all_states{timestamp_of_drop(1,ct),1},...
+%     mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
+%    [],[],[]);
+% end
 %% plot SE vs time
     timeline(1,1)=0;
     for tl=2:number_of_timestamps
         timeline(tl,1)=timeline(tl-1,1)+time; 
     end
-%     for ct=1:CTs %remove cases where pairs_qtity_mAOS<15
-%         for n=no_runs:-1:1 
-%             if pairs_qtity_mAOS{1,ct}(n)<15
-%                 pairs_qtity_mAOS{1,ct}(n)=[];
-%                 for timestamp=1:number_of_timestamps 
-%                     SE_mAOS{timestamp,ct}(n)=[];
-%                 end    
-%             end       
-%         end
-%     end
+
     for ct=1:CTs %calculate mean values
     	for timestamp=1:number_of_timestamps 
             SE_mAOS_av(timestamp,ct)=mean(SE_mAOS{timestamp,ct}); 
             SE_rand_av(timestamp,ct)=mean(SE_rand{timestamp,ct});
         end
         timestamp_of_drop_celled{ct}=timestamp_of_drop(:,ct);
-        timestamp_of_drop_celled{ct}=timestamp_of_drop_celled{ct}(timestamp_of_drop_celled{ct}~=0); %remove 0 values
+        timestamp_of_drop_celled{ct}=timestamp_of_drop_celled{ct}(timestamp_of_drop_celled{ct}~=0);
+        %remove 0 values, timestamp_of_drop=0 means there were no drop at that n
         timestamp_of_drop_av(ct)=round(mean(timestamp_of_drop_celled{ct})); %mean timestamp over n iterations
-        SE_mAOS_rerun_celled{ct}=SE_mAOS_rerun(:,ct);
-        SE_mAOS_rerun_celled{ct}=SE_mAOS_rerun_celled{ct}(SE_mAOS_rerun_celled{ct}~=0);
-        SE_mAOS_rerun_av(ct)=mean(SE_mAOS_rerun_celled{ct}); % mean restore of SE after mAOS rerun
+%         SE_mAOS_rerun_celled{ct}=SE_mAOS_rerun(:,ct);
+%         SE_mAOS_rerun_celled{ct}=SE_mAOS_rerun_celled{ct}(SE_mAOS_rerun_celled{ct}~=0);
+%         if ~(isempty(SE_mAOS_rerun{1,ct}))
+            for timestamp=1:number_of_timestamps
+                SE_mAOS_rerun{timestamp,ct}=SE_mAOS_rerun{timestamp,ct}(SE_mAOS_rerun{timestamp,ct}~=0);
+                SE_mAOS_rerun_av(timestamp,ct)=mean(SE_mAOS_rerun{timestamp,ct});
+            end
+%         end
+%         SE_mAOS_rerun_av(ct)=mean(SE_mAOS_rerun_celled{ct}); % mean restore of SE after mAOS rerun
+    end
+    for timestamp=1:number_of_timestamps 
+    	SE_mAOS_mean_RB(timestamp,1)=mean(SE_mAOS_av(timestamp,:));
     end
     %% 
+    %try n=1
     figure
     for ct=1:CTs
-        to_plot=[SE_mAOS_av(1:timestamp_of_drop_av(ct),ct);SE_mAOS_rerun_av(ct)];
-        plot (timeline(1:timestamp_of_drop_av(ct)+1), to_plot, '-o','Color',customColormap(ct,:),'linewidth',1); %+1 timestamp for rerunned value
+        to_plot_y=[SE_mAOS_av(1:timestamp_of_drop_av(ct),ct);SE_mAOS_rerun_av(timestamp_of_drop_av(ct):end,ct)];
+        to_plot_x=[timeline(1:timestamp_of_drop_av(ct));timeline(timestamp_of_drop_av(ct));timeline(timestamp_of_drop_av(ct)+1:end)];
+%         to_plot_y=[SE_mAOS_av(1:timestamp_of_drop_av(ct),ct);SE_mAOS_rerun_av(ct);SE_mAOS_rerun_av(timestamp_of_drop_av(ct)+1:end,ct)];
+%         to_plot_x=[timeline(1:timestamp_of_drop_av(ct));timeline(timestamp_of_drop_av(ct));timeline(timestamp_of_drop_av(ct)+1:end)];
+        plot (to_plot_x, to_plot_y, '-o','Color',customColormap(ct,:),'linewidth',1); %+1 timestamp for rerunned value
         if ct==1
             hold on
         end
-        plot (timeline(1:timestamp_of_drop_av(ct)), SE_rand_av(1:timestamp_of_drop_av(ct),ct), '--o','Color',customColormap(ct,:),'linewidth',1);
-        xline((timestamp_of_drop_av(ct)-1)*time, ':','Color',customColormap(ct,:),'linewidth',1.5);
+%         plot (timeline(1:number_of_timestamps), SE_rand_av(1:number_of_timestamps,ct), '--','Color',customColormap(ct,:),'linewidth',1);
+%         xline((timestamp_of_drop_av(ct)-1)*time, ':','Color',customColormap(ct,:),'linewidth',1.5);
     end
+%     plot (timeline(1:number_of_timestamps), SE_mAOS_mean_RB(1:number_of_timestamps), '-o','Color','k','linewidth',1);
           yline(SE_mAOS_av(1,1),'g','LineStyle', '-','linewidth',1.5);
           yline(SE_mAOS_av(1,1)*(100-SE_percent)/100,'g','LineStyle', '--','linewidth',1.5); 
     ylim([0 200]);
-    xlim([0 120]); %number_of_timestamps*time
+    xlim([0 200]); %number_of_timestamps*time
     grid on
-    legend('mAOS RB1 (15 pairs selected)','random RB1','av. time for undesired SE drop of RB1',...
-        'mAOS RB2','random RB2','av. time for undesired SE drop of RB2',...
-        'mAOS RB3','random RB3','av. time for undesired SE drop of RB3',...
+    legend('mAOS RB1 (15 pairs selected)',...
+        'mAOS RB2',...
+        'mAOS RB3',...
+        'av. mAOS for all RBs',...
         'av. initial SE for 15 pairs','av. initial SE for 15 pairs-25%' );
+
+%     legend('mAOS RB1 (15 pairs selected)','random RB1',...
+%         'mAOS RB2','random RB2',...
+%         'mAOS RB3','random RB3',...
+%         'av. mAOS for all RBs',...
+%         'av. initial SE for 15 pairs','av. initial SE for 15 pairs-25%' );
     xlabel('Time (sec)','FontName','Arial','FontSize',14);
     ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
     title("Averaged SE drop and mAOS rerun over "+no_runs+" iteration(s) for D2Ds at "+velocity_kmh+" km/h speed");
@@ -513,11 +545,12 @@ function [values]=find_mean_for_each_pairs_qtity(numbers_of_pairs,SE)
     [Alink,aa] = findgroups(A(:,1)); %aa - different values of pairs, Alink - links from aa to A
     values = [ aa, splitapply(@mean,A(:,2),Alink)]; %find mean value for each # of pairs
 end
-function distr_visual(color, CUE1_x, CUE1_y,CUE2_x, CUE2_y,CUE3_x, CUE3_y,...
+function distr_visual(color, eNBs, CUE1_x, CUE1_y,CUE2_x, CUE2_y,CUE3_x, CUE3_y,...
     D2D_user_list1,D2D_user_list2,D2D_user_list3,...
     AOS_user_list1,AOS_user_list2,AOS_user_list3,...
     AOS_user_list1_upd,AOS_user_list2_upd,AOS_user_list3_upd)
 
+    scatter_size=15;
     figure
     viscircles([200 200],200,'Color','k','linewidth',0.5);
     viscircles([600 200],200,'Color','k','linewidth',0.5);
@@ -526,46 +559,48 @@ function distr_visual(color, CUE1_x, CUE1_y,CUE2_x, CUE2_y,CUE3_x, CUE3_y,...
     axis square
     grid on;
     hold on;
-    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],'green','filled','MarkerEdgeAlpha',.2);
-    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],color);
+    scatter([eNBs(1,1),eNBs(2,1),eNBs(3,1)],[eNBs(1,2),eNBs(2,2),eNBs(3,2)],scatter_size,'k','filled');     
+    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],scatter_size,'green','filled','MarkerEdgeAlpha',.2);
+    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],scatter_size,color);
     
-    scatter(D2D_user_list1(:,1),D2D_user_list1(:,2),'k','MarkerEdgeAlpha',.2);
-    scatter(D2D_user_list1(:,3),D2D_user_list1(:,4),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
-    scatter(D2D_user_list2(:,1),D2D_user_list2(:,2),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
-    scatter(D2D_user_list2(:,3),D2D_user_list2(:,4),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
-    scatter(D2D_user_list3(:,1),D2D_user_list3(:,2),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
-    scatter(D2D_user_list3(:,3),D2D_user_list3(:,4),'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
+    scatter(D2D_user_list1(:,1),D2D_user_list1(:,2),scatter_size,'k','MarkerEdgeAlpha',.2);
+    scatter(D2D_user_list1(:,3),D2D_user_list1(:,4),scatter_size,'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
+    scatter(D2D_user_list2(:,1),D2D_user_list2(:,2),scatter_size,'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
+    scatter(D2D_user_list2(:,3),D2D_user_list2(:,4),scatter_size,'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
+    scatter(D2D_user_list3(:,1),D2D_user_list3(:,2),scatter_size,'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
+    scatter(D2D_user_list3(:,3),D2D_user_list3(:,4),scatter_size,'k','MarkerEdgeAlpha',.2,'HandleVisibility','off');
     
     if ~(isempty(AOS_user_list1))
-    scatter(AOS_user_list1(:,1),AOS_user_list1(:,2),color);
-    scatter(AOS_user_list1(:,3),AOS_user_list1(:,4),color,'HandleVisibility','off');
+    scatter(AOS_user_list1(:,1),AOS_user_list1(:,2),scatter_size,color);
+    scatter(AOS_user_list1(:,3),AOS_user_list1(:,4),scatter_size,color,'HandleVisibility','off');
     end
     if ~(isempty(AOS_user_list2))
-    scatter(AOS_user_list2(:,1),AOS_user_list2(:,2),color,'HandleVisibility','off');
-    scatter(AOS_user_list2(:,3),AOS_user_list2(:,4),color,'HandleVisibility','off');
+    scatter(AOS_user_list2(:,1),AOS_user_list2(:,2),scatter_size,color,'HandleVisibility','off');
+    scatter(AOS_user_list2(:,3),AOS_user_list2(:,4),scatter_size,color,'HandleVisibility','off');
     end
     if ~(isempty(AOS_user_list3))
-    scatter(AOS_user_list3(:,1),AOS_user_list3(:,2),color,'HandleVisibility','off');
-    scatter(AOS_user_list3(:,3),AOS_user_list3(:,4),color,'HandleVisibility','off');
+    scatter(AOS_user_list3(:,1),AOS_user_list3(:,2),scatter_size,color,'HandleVisibility','off');
+    scatter(AOS_user_list3(:,3),AOS_user_list3(:,4),scatter_size,color,'HandleVisibility','off');
     end
     
     if ~(isempty(AOS_user_list1_upd))
-    scatter(AOS_user_list1_upd(:,1),AOS_user_list1_upd(:,2),color,'filled');
-    scatter(AOS_user_list1_upd(:,3),AOS_user_list1_upd(:,4),color,'filled','HandleVisibility','off');
+    scatter(AOS_user_list1_upd(:,1),AOS_user_list1_upd(:,2),scatter_size,color,'filled');
+    scatter(AOS_user_list1_upd(:,3),AOS_user_list1_upd(:,4),scatter_size,color,'filled','HandleVisibility','off');
     end
     if ~(isempty(AOS_user_list2_upd))
-    scatter(AOS_user_list2_upd(:,1),AOS_user_list2_upd(:,2),color,'filled','HandleVisibility','off'); %HandleVisibility is off for legend to have only 3 opaque properties
-    scatter(AOS_user_list2_upd(:,3),AOS_user_list2_upd(:,4),color,'filled','HandleVisibility','off');
+    scatter(AOS_user_list2_upd(:,1),AOS_user_list2_upd(:,2),scatter_size,color,'filled','HandleVisibility','off'); %HandleVisibility is off for legend to have only 3 opaque properties
+    scatter(AOS_user_list2_upd(:,3),AOS_user_list2_upd(:,4),scatter_size,color,'filled','HandleVisibility','off');
     end
     if ~(isempty(AOS_user_list3_upd))
-    scatter(AOS_user_list3_upd(:,1),AOS_user_list3_upd(:,2),color,'filled','HandleVisibility','off');
-    scatter(AOS_user_list3_upd(:,3),AOS_user_list3_upd(:,4),color,'filled','HandleVisibility','off');
+    scatter(AOS_user_list3_upd(:,1),AOS_user_list3_upd(:,2),scatter_size,color,'filled','HandleVisibility','off');
+    scatter(AOS_user_list3_upd(:,3),AOS_user_list3_upd(:,4),scatter_size,color,'filled','HandleVisibility','off');
     end
 %     legend('CT','init DT','DT AOS','DT mAOS');
 end
-function distr_visual_to_timestamp(ct, color, CUE1_x, CUE1_y,CUE2_x, CUE2_y,CUE3_x, CUE3_y,...
-    ul1,ul2,ul3,timestamp_of_drop) % here at input uls should have dimensions e.g. 20x1 cell
+function distr_visual_to_timestamp(ct, eNBs,color, CUE1_x, CUE1_y,CUE2_x, CUE2_y,CUE3_x, CUE3_y,...
+    ul1,ul2,ul3,timestamp_of_drop,number_of_timestamps) % no! full lists! -here at input uls should have dimensions e.g. 20x1 cell
 
+    scatter_size=15;
     figure
     viscircles([200 200],200,'Color','k','linewidth',0.5);
     viscircles([600 200],200,'Color','k','linewidth',0.5);
@@ -574,24 +609,25 @@ function distr_visual_to_timestamp(ct, color, CUE1_x, CUE1_y,CUE2_x, CUE2_y,CUE3
     axis square
     grid on;
     hold on;
-    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],'green','filled','MarkerEdgeAlpha',.2);
-    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],color);
+    scatter([eNBs(1,1),eNBs(2,1),eNBs(3,1)],[eNBs(1,2),eNBs(2,2),eNBs(3,2)],scatter_size,'k','filled');     
+    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],scatter_size,'green','filled','MarkerEdgeAlpha',.2);
+    scatter([CUE1_x CUE2_x CUE3_x],[CUE1_y CUE2_y CUE3_y],scatter_size,color);
         
     for timestamp=1:timestamp_of_drop
 %         if i==timestamp_of_drop+1
 %         color='k';
 %         end
-        if ~(isempty(ul1{timestamp,ct}))
-        scatter(ul1{timestamp,ct}(:,1),ul1{timestamp,ct}(:,2),color,'MarkerEdgeAlpha',0.05*timestamp);
-        scatter(ul1{timestamp,ct}(:,3),ul1{timestamp,ct}(:,4),color,'MarkerEdgeAlpha',0.05*timestamp);
+        if ~(isempty(ul1{timestamp,ct})) %were ...,ct}))
+        scatter(ul1{timestamp,ct}(:,1),ul1{timestamp,ct}(:,2),scatter_size,color,'MarkerEdgeAlpha',(number_of_timestamps-timestamp+1)*0.05);
+        scatter(ul1{timestamp,ct}(:,3),ul1{timestamp,ct}(:,4),scatter_size,color,'MarkerEdgeAlpha',1-0.05*timestamp);
         end
-        if ~(isempty(ul2{timestamp,ct}))
-        scatter(ul2{timestamp,ct}(:,1),ul2{timestamp,ct}(:,2),color,'MarkerEdgeAlpha',0.05*timestamp);
-        scatter(ul2{timestamp,ct}(:,3),ul2{timestamp,ct}(:,4),color,'MarkerEdgeAlpha',0.05*timestamp);
+        if ~(isempty(ul2{timestamp,1}))
+        scatter(ul2{timestamp,ct}(:,1),ul2{timestamp,ct}(:,2),scatter_size,color,'MarkerEdgeAlpha',1-0.05*timestamp);
+        scatter(ul2{timestamp,ct}(:,3),ul2{timestamp,ct}(:,4),scatter_size,color,'MarkerEdgeAlpha',1-0.05*timestamp);
         end
-        if ~(isempty(ul3{timestamp,ct}))
-        scatter(ul3{timestamp,ct}(:,1),ul3{timestamp,ct}(:,2),color,'MarkerEdgeAlpha',0.05*timestamp);
-        scatter(ul3{timestamp,ct}(:,3),ul3{timestamp,ct}(:,4),color,'MarkerEdgeAlpha',0.05*timestamp);
+        if ~(isempty(ul3{timestamp,1}))
+        scatter(ul3{timestamp,ct}(:,1),ul3{timestamp,ct}(:,2),scatter_size,color,'MarkerEdgeAlpha',1-0.05*timestamp);
+        scatter(ul3{timestamp,ct}(:,3),ul3{timestamp,ct}(:,4),scatter_size,color,'MarkerEdgeAlpha',1-0.05*timestamp);
         end
     end
 end
