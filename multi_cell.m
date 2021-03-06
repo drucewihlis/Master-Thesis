@@ -11,8 +11,8 @@ DUE_Exp = 4.33; % Devices Pathloss Exponent - Alpha_d
 eNB1_x = 200; eNB1_y = 200; 
 eNB2_x = 400; eNB2_y = 200+200*sqrt(3);
 eNB3_x = 600; eNB3_y = 200;
-customColormap = [1 0 0  ;1 0 1 ;0 1 1; 1 1 0; 0 0 1 ; 0 1 0]; %r m c y b g
-customColormap_char = ['r'; 'm'; 'c' ;'y'; 'b'; 'g' ]; 
+customColormap = [1 0 0  ;1 0 1 ;0 0 1; 1 1 0; 0 1 1 ; 0 1 0]; %r m c y b g
+customColormap_char = ['r'; 'm'; 'b' ;'y'; 'c'; 'g' ]; 
 
 mobility=5; % percent of the cell radius
 velocity_kmh=10; %km/h
@@ -20,7 +20,7 @@ velocity=velocity_kmh*5/18;
 timestamp=10; %sec
 number_of_timestamps=2;
 CTs = 3; % same # of CTs for each cell
-no_runs=10;
+no_runs=200;
 
 for ct=1:CTs
     SINR_C_mAOS{1,ct}=[];
@@ -236,12 +236,13 @@ for ct=1:CTs
     solid_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{1,ct}); %mAOS
     set( solid_SINR_D(ct),'Color',customColormap(ct,:));
 
-    dashed_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{2,ct}); %mAOS+hop
-    set( dashed_SINR_D(ct), 'LineStyle', '--','Color',customColormap(ct,:));
+%     dashed_SINR_D(ct)=cdfplot(SINR_D_mAOS_dB{2,ct}); %mAOS+hop
+%     set( dashed_SINR_D(ct), 'LineStyle', '--','Color',customColormap(ct,:));
 end
 xline(15,'g'); %outage probability
 grid on
-legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
+legend('random RB1','mAOS RB1','random RB2','mAOS RB2','random RB3','mAOS RB3','outage probability');
+% legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
 xlabel('DT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
 
@@ -256,12 +257,12 @@ for ct=1:CTs
     solid_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{1,ct});
     set( solid_SINR_C(ct),'Color',customColormap(ct,:));
 
-    dashed_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{2,ct});
-    set( dashed_SINR_C(ct), 'LineStyle', '--','Color',customColormap(ct,:));
+%     dashed_SINR_C(ct)=cdfplot(SINR_C_mAOS_dB{2,ct});
+%     set( dashed_SINR_C(ct), 'LineStyle', '--','Color',customColormap(ct,:));
 end
 xline(6,'g'); %outage probability
 grid on
-legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','outage probability');
+legend('random RB1','mAOS RB1','random RB2','mAOS RB2','random RB3','mAOS RB3','outage probability');
 xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
 
@@ -276,15 +277,17 @@ for ct=1:CTs %append 0,0 value for better representation
    mean_values{1,ct}=[0 0; mean_values{1,ct}];
    plot(mean_values{1,ct}(:,1),mean_values{1,ct}(:,2),'-o','linewidth',1,'Color',customColormap(ct,:));
    
-   mean_values{2,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{2,ct});
-   mean_values{2,ct}=[0 0; mean_values{2,ct}];
-   plot(mean_values{2,ct}(:,1),mean_values{2,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
+%    mean_values{2,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{2,ct});
+%    mean_values{2,ct}=[0 0; mean_values{2,ct}];
+%    plot(mean_values{2,ct}(:,1),mean_values{2,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
 
+end
    yline(147,'g'); %av SE 
    xline(16,'g'); %av # of pairs
-end
+
 grid on
-legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','av. SE & # of pairs');
+legend('random RB1','mAOS RB1','random RB2','mAOS RB2','random RB3','mAOS RB3','av. SE & # of pairs');
+% legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','av. SE & # of pairs');
 xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
 ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
 
