@@ -29,7 +29,7 @@ time=10; %sec between timestamps
 distance=velocity*time;
 number_of_timestamps=20; %scatter of n=1 can plot 20 timestamps max
 CTs = 3; % same # of CTs for each cell
-no_runs=1; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
+no_runs=200; % if 1: there could be no selection w/ 15 pairs, so SE_vs_time do not plot curves for all RBs
 
 for ct=1:CTs
     SINR_C_mAOS{1,ct}=[];
@@ -48,10 +48,10 @@ for ct=1:CTs
     SINR_D_rand_all_dB{1,ct}=[];SINR_D_rand_all_dB{2,ct}=[];
 end
 
-n=1; % for strictly 15 pairs to RB1      
-while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
+% n=1; % for strictly 15 pairs to RB1      
+% while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
     
-% for n=1:no_runs
+for n=1:no_runs
     to_disp=['n# ',num2str(n)];
     disp(to_disp);
     
@@ -154,10 +154,10 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
         
         numbers_of_pairs_new_AOS   
         
-        % for 15 pairs to RB1
-        if numbers_of_pairs_new_AOS~=15&&ct==1 % delete second part if 15 pairs for all RBs needed, drastically enlarges comp. time
-            break   %rerun current loop if less than 15 pairs selected
-        end
+%         % for 15 pairs to RB1
+%         if numbers_of_pairs_new_AOS~=15&&ct==1 % delete second part if 15 pairs for all RBs needed, drastically enlarges comp. time
+%             break   %rerun current loop if less than 15 pairs selected
+%         end
         
         AOS_list1{1,ct}=AOS_user_list1;
         AOS_list2{1,ct}=AOS_user_list2;
@@ -342,28 +342,28 @@ while n<=no_runs %redo same loop until pairs_qtity_mAOS==15
 
     end %end CTs 
     
-     % for strictly 15 pairs to RB1      
-    if numbers_of_pairs_new_AOS==15||ct~=1 % delete second part if 15 pairs for all RBs needed
-        n=n+1; % iter increment
-    end
+%      % for strictly 15 pairs to RB1      
+%     if numbers_of_pairs_new_AOS==15||ct~=1 % delete second part if 15 pairs for all RBs needed
+%         n=n+1; % iter increment
+%     end
     
 end %end no_runs    
 %% 
-% for ct=1:CTs
-% distr_visual(customColormap_char(ct),eNBs,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-%     D2D_user_list1_all_states{1,ct},D2D_user_list2_all_states{1,ct},D2D_user_list3_all_states{1,ct},...
-%     mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct},...
-%    [],[],[]);
-% 
-% distr_visual_to_timestamp(ct,eNBs,customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-%         mAOS_list1,mAOS_list2,mAOS_list3,timestamp_of_drop(1,ct),number_of_timestamps);
-% %can cause errors if SE didn't fall over number_of_timestamps or SE fell at 0 timestamp    
-% 
-% distr_visual(customColormap_char(ct),eNBs,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
-%     D2D_user_list1_all_states{timestamp_of_drop(1,ct),1},D2D_user_list2_all_states{timestamp_of_drop(1,ct),1},D2D_user_list3_all_states{timestamp_of_drop(1,ct),1},...
-%     mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
-%    [],[],[]);
-% end
+for ct=1:CTs
+distr_visual(customColormap_char(ct),eNBs,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+    D2D_user_list1_all_states{1,ct},D2D_user_list2_all_states{1,ct},D2D_user_list3_all_states{1,ct},...
+    mAOS_list1{1,ct},mAOS_list2{1,ct},mAOS_list3{1,ct},...
+   [],[],[]);
+
+distr_visual_to_timestamp(ct,eNBs,customColormap_char(ct),CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+        mAOS_list1,mAOS_list2,mAOS_list3,timestamp_of_drop(1,ct),number_of_timestamps);
+%can cause errors if SE didn't fall over number_of_timestamps or SE fell at 0 timestamp    
+
+distr_visual(customColormap_char(ct),eNBs,CUEs{1,ct}(1,1),CUEs{1,ct}(1,2),CUEs{1,ct}(2,1),CUEs{1,ct}(2,2),CUEs{1,ct}(3,1),CUEs{1,ct}(3,2),... %plot the distribution
+    D2D_user_list1_all_states{timestamp_of_drop(1,ct),1},D2D_user_list2_all_states{timestamp_of_drop(1,ct),1},D2D_user_list3_all_states{timestamp_of_drop(1,ct),1},...
+    mAOS_list1_rerun{1,ct},mAOS_list2_rerun{1,ct},mAOS_list3_rerun{1,ct},...
+   [],[],[]);
+end
 %% plot SE vs time
     timeline(1,1)=0;
     for tl=2:number_of_timestamps
@@ -411,12 +411,11 @@ end %end no_runs
           yline(SE_mAOS_av(1,1),'g','LineStyle', '-','linewidth',1.5);
           yline(SE_mAOS_av(1,1)*(100-SE_percent)/100,'g','LineStyle', '--','linewidth',1.5); 
     ylim([0 200]);
-    xlim([0 200]); %number_of_timestamps*time
+    xlim([0 80]); %number_of_timestamps*time
     grid on
     legend('mAOS RB1 (15 pairs selected)',...
         'mAOS RB2',...
-        'mAOS RB3',...
-        'av. mAOS for all RBs',...
+        'mAOS RB3',...        
         'av. initial SE for 15 pairs','av. initial SE for 15 pairs-25%' );
 
 %     legend('mAOS RB1 (15 pairs selected)','random RB1',...
@@ -430,8 +429,8 @@ end %end no_runs
   
 
 
-%% PLOTS
-%CDF DT
+% %% PLOTS
+% %CDF DT
 % figure
 % xlim([0 50]);
 % hold on
@@ -471,7 +470,7 @@ end %end no_runs
 % xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
 % ylabel('CDF','FontName','Arial','FontSize',14);
 % 
-%SE
+% %SE
 % figure
 % for ct=1:CTs 
 %    mean_values_random{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_random{1,ct},SE_rand{1,ct});
@@ -721,20 +720,20 @@ multi_cell_AOS...
     mAOS_list_all_initial=[AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
     AOS_user_list_all_new=[AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
     
-    %!!! here # of selected pairs is now fixed to be 15 at maximum
-    while size(AOS_user_list_all_new,1)>15
-        if size(AOS_user_list1_upd,1)>5
-            AOS_user_list1_upd(end,:)=[];
-        end
-        if size(AOS_user_list2_upd,1)>5
-            AOS_user_list2_upd(end,:)=[];
-        end
-        if size(AOS_user_list3_upd,1)>5
-            AOS_user_list3_upd(end,:)=[];
-        end            
-        AOS_user_list_all_new= [AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
-    end
-    %
+%     %!!! here # of selected pairs is now fixed to be 15 at maximum
+%     while size(AOS_user_list_all_new,1)>15
+%         if size(AOS_user_list1_upd,1)>5
+%             AOS_user_list1_upd(end,:)=[];
+%         end
+%         if size(AOS_user_list2_upd,1)>5
+%             AOS_user_list2_upd(end,:)=[];
+%         end
+%         if size(AOS_user_list3_upd,1)>5
+%             AOS_user_list3_upd(end,:)=[];
+%         end            
+%         AOS_user_list_all_new= [AOS_user_list1_upd;AOS_user_list2_upd;AOS_user_list3_upd];
+%     end
+%     %
     
     n=1;
     numbers_of_pairs_new_AOS(n,1) = size(AOS_user_list1_upd,1)+size(AOS_user_list2_upd,1)+size(AOS_user_list3_upd,1);
