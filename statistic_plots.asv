@@ -87,7 +87,7 @@ grid on
 legend('SBS','mAOS');
 xlabel('CT SINR (dB)','FontName','Arial','FontSize',14);
 ylabel('CDF','FontName','Arial','FontSize',14);
-%% 
+
 %SE
 A=[qtity_of_pairs_AOS,SE_AOS]; 
 B=[qtity_of_pairs_OFDMPl_PC,SE_OFDMPl_PC];
@@ -98,30 +98,25 @@ B=sortrows(B);
 [Blink,bb] = findgroups(B(:,1));
 B1 = [ bb, splitapply(@mean,B(:,2),Blink)];
 
-% yy = zeros(5,length(xxi));
-% p = [.6 .7 .8 .9 1];
-% for j=1:5
-%    yy(j,:) = csaps(xi,ybad,p(j),xxi);
-% end
-% hold on
-% plot(xxi,yy);
-% hold off
-% title('Smoothing Splines for Various Values of the Smoothing Parameter')
-% legend({'Exact','Noisy','p = 0.5','p = 0.6','p = 0.7','p = 0.8', ...
-%         'p = 0.9', 'p = 1.0'}, 'Location', 'NorthWest' )
+yy = zeros(5,length(xxi));
+p = [.6 .7 .8 .9 1];
+for j=1:5
+   yy(j,:) = csaps(xi,ybad,p(j),xxi);
+end
+hold on
+plot(xxi,yy);
+hold off
+title('Smoothing Splines for Various Values of the Smoothing Parameter')
+legend({'Exact','Noisy','p = 0.5','p = 0.6','p = 0.7','p = 0.8', ...
+        'p = 0.9', 'p = 1.0'}, 'Location', 'NorthWest' )
     
 
 figure
-plot(A1(:,1),A1(:,2),'b-o','linewidth',1.5); %b r y m g c 
+plot(A1(:,1),A1(:,2),'b-o','linewidth',2.5); %b r y m g c 
 hold on
-smoothed_curve_1=csaps(A1(:,1),A1(:,2),0.05);
-fnplt(smoothed_curve_1);
- 
-plot(B1(:,1),B1(:,2),'r-o','linewidth',1.5);
-smoothed_curve_2=csaps(B1(:,1),B1(:,2),0.05);
-fnplt(smoothed_curve_2);
+plot(B1(:,1),B1(:,2),'r-o','linewidth',2.5);
 grid on
-legend('SBS','smoothened SBS','mAOS','smoothened mAOS');
+legend('SBS','mAOS');
 xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
 ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
 
