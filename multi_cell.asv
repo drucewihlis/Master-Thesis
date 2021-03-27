@@ -318,13 +318,13 @@ figure
     xlim([0 50]);
     hold on
     dotted_mean_SINR_D(ct)=cdfplot(mean_SINR_D_rand_all_dB); %random
-    set( dotted_mean_SINR_D(ct), 'LineStyle', ':','Color','k');
+    set( dotted_mean_SINR_D(ct), 'LineStyle', ':','Color','b');
 
     solid_mean_SINR_D(ct)=cdfplot(mean_SINR_D_mAOS_dB); %mAOS
-    set( solid_mean_SINR_D(ct),'Color','k');
+    set( solid_mean_SINR_D(ct),'Color','b');
 
     dashed_mean_SINR_D(ct)=cdfplot(mean_SINR_D_mPRS_dB); %mPRS
-    set( dashed_mean_SINR_D(ct), 'LineStyle', '--','Color','k');
+    set( dashed_mean_SINR_D(ct), 'LineStyle', '--','Color','b');
 xline(15,'g'); %outage probability
 grid on
 legend('random av. RB','mAOS av. RB','mPRS av. RB','outage probability');
@@ -362,13 +362,13 @@ figure
     xlim([0 50]);
     hold on
     dotted_mean_SINR_C(ct)=cdfplot(mean_SINR_C_rand_all_dB); %random
-    set( dotted_mean_SINR_C(ct), 'LineStyle', ':','Color','k');
+    set( dotted_mean_SINR_C(ct), 'LineStyle', ':','Color','b');
 
     solid_mean_SINR_C(ct)=cdfplot(mean_SINR_C_mAOS_dB); %mAOS
-    set( solid_mean_SINR_C(ct),'Color','k');
+    set( solid_mean_SINR_C(ct),'Color','b');
 
     dashed_mean_SINR_C(ct)=cdfplot(mean_SINR_C_mPRS_dB); %mPRS
-    set( dashed_mean_SINR_C(ct), 'LineStyle', '--','Color','k');
+    set( dashed_mean_SINR_C(ct), 'LineStyle', '--','Color','b');
 xline(6,'g'); %outage probability
 grid on
 legend('random av. RB','mAOS av. RB','mPRS av. RB','outage probability');
@@ -378,33 +378,33 @@ ylabel('CDF','FontName','Arial','FontSize',14);
 
 %SE
 
-% figure
-% for ct=1:CTs %append 0,0 value for better representation
-%    mean_values_random{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_random{1,ct},SE_rand{1,ct});
-%    mean_values_random{1,ct}=[0 0; mean_values_random{1,ct}];
-%    plot(mean_values_random{1,ct}(:,1),mean_values_random{1,ct}(:,2),':o','linewidth',1,'Color',customColormap(ct,:));
-%    hold on
-%    mean_values{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{1,ct});
-%    mean_values{1,ct}=[0 0; mean_values{1,ct}];
-%    plot(mean_values{1,ct}(:,1),mean_values{1,ct}(:,2),'-o','linewidth',1,'Color',customColormap(ct,:));
-%     
-%    %mPRS
-%    mean_values_PRS{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mPRS{1,ct},SE_mPRS{1,ct});
-%    mean_values_PRS{1,ct}=[0 0; mean_values_PRS{1,ct}];
-%    plot(mean_values_PRS{1,ct}(:,1),mean_values_PRS{1,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
-% 
-% %    mean_values{2,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{2,ct});
-% %    mean_values{2,ct}=[0 0; mean_values{2,ct}];
-% %    plot(mean_values{2,ct}(:,1),mean_values{2,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
-% 
-% end
-%    yline(147,'g'); %av SE 
-%    xline(16,'g'); %av # of pairs
-% grid on
-% legend('random RB1','mAOS RB1','random RB2','mAOS RB2','random RB3','mAOS RB3','av. SE & # of pairs');
-% % legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','av. SE & # of pairs');
-% xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
-% ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
+figure
+for ct=1:CTs %append 0,0 value for better representation
+   mean_values_random{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_random{1,ct},SE_rand{1,ct});
+   mean_values_random{1,ct}=[0 0; mean_values_random{1,ct}];
+   plot(mean_values_random{1,ct}(:,1),mean_values_random{1,ct}(:,2),':o','linewidth',1,'Color',customColormap(ct,:));
+   hold on
+   mean_values{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{1,ct});
+   mean_values{1,ct}=[0 0; mean_values{1,ct}];
+   plot(mean_values{1,ct}(:,1),mean_values{1,ct}(:,2),'-o','linewidth',1,'Color',customColormap(ct,:));
+    
+   %mPRS
+   mean_values_PRS{1,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mPRS{1,ct},SE_mPRS{1,ct});
+   mean_values_PRS{1,ct}=[0 0; mean_values_PRS{1,ct}];
+   plot(mean_values_PRS{1,ct}(:,1),mean_values_PRS{1,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
+
+%    mean_values{2,ct}=find_mean_for_each_pairs_qtity(pairs_qtity_mAOS{1,ct},SE_mAOS{2,ct});
+%    mean_values{2,ct}=[0 0; mean_values{2,ct}];
+%    plot(mean_values{2,ct}(:,1),mean_values{2,ct}(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
+
+end
+   yline(147,'g'); %av SE 
+   xline(16,'g'); %av # of pairs
+grid on
+legend('random RB1','mAOS RB1','random RB2','mAOS RB2','random RB3','mAOS RB3','av. SE & # of pairs');
+% legend('random RB1','mAOS RB1','mAOS RB1 + hop','random RB2','mAOS RB2','mAOS RB2 + hop','random RB3','mAOS RB3','mAOS RB3 + hop','av. SE & # of pairs');
+xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
+ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
 
 figure
     mean_pairs_qtity_random=[pairs_qtity_random{1,1};pairs_qtity_random{1,2};pairs_qtity_random{1,3}];
@@ -416,18 +416,18 @@ figure
     
     mean_mean_values_random=find_mean_for_each_pairs_qtity(mean_pairs_qtity_random,mean_SE_rand);
     mean_mean_values_random=[0 0; mean_mean_values_random];
-    plot(mean_mean_values_random(:,1),mean_mean_values_random(:,2),':o','linewidth',1,'Color','k');
+    plot(mean_mean_values_random(:,1),mean_mean_values_random(:,2),':o','linewidth',1,'Color',customColormap(ct,:));
     hold on
     mean_mean_values_mAOS=find_mean_for_each_pairs_qtity(mean_pairs_qtity_mAOS,mean_SE_mAOS);
     mean_mean_values_mAOS=[0 0; mean_mean_values_mAOS];
-    plot(mean_mean_values_mAOS(:,1),mean_mean_values_mAOS(:,2),'-o','linewidth',1,'Color','k');
+    plot(mean_mean_values_mAOS(:,1),mean_mean_values_mAOS(:,2),'-o','linewidth',1,'Color',customColormap(ct,:));
     mean_mean_values_mPRS=find_mean_for_each_pairs_qtity(mean_pairs_qtity_mPRS,mean_SE_mPRS);
     mean_mean_values_mPRS=[0 0; mean_mean_values_mPRS];
-    plot(mean_mean_values_mPRS(:,1),mean_mean_values_mPRS(:,2),'--o','linewidth',1,'Color','k');
-yline(152.1,'g'); %av SE 
+    plot(mean_mean_values_mPRS(:,1),mean_mean_values_mPRS(:,2),'--o','linewidth',1,'Color',customColormap(ct,:));
+yline(147,'g'); %av SE 
 xline(16,'g'); %av # of pairs
 grid on
-legend('random av. RB','mAOS av. RB','mPRS av. RB','av. SE & # of pairs for mAOS');
+legend('random av. RB','mAOS av. RB','mPRS av. RB','av. SE & # of pairs');
 xlabel('Number of D2D pairs','FontName','Arial','FontSize',14);
 ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
 
