@@ -225,15 +225,15 @@ for n=1:no_runs
         
 
         
-%         D2D_user_list1=D2Ds_left1; %!!! should be at the end
-%         D2D_user_list2=D2Ds_left2; %output will go on the input of the mAOS
-%         D2D_user_list3=D2Ds_left3;
+        D2D_user_list1=D2Ds_left1; %!!! should be at the end
+        D2D_user_list2=D2Ds_left2; %output will go on the input of the mAOS
+        D2D_user_list3=D2Ds_left3;
         
-%         if ct~=CTs %not to create new col of ct
-%             D2D_user_list1_all_states{1,ct+1}=D2Ds_left1;
-%             D2D_user_list2_all_states{1,ct+1}=D2Ds_left2;
-%             D2D_user_list3_all_states{1,ct+1}=D2Ds_left3;
-%         end
+        if ct~=CTs %not to create new col of ct
+            D2D_user_list1_all_states{1,ct+1}=D2Ds_left1;
+            D2D_user_list2_all_states{1,ct+1}=D2Ds_left2;
+            D2D_user_list3_all_states{1,ct+1}=D2Ds_left3;
+        end
         
 
     end %end CTs 
@@ -296,11 +296,9 @@ end
     %% 
     SE_mAOS_arr = cell2mat( SE_mAOS )
     figure
-  plot (timeline, SE_mAOS_arr, '-o','Color','red','linewidth',1); %+1 timestamp for rerunned value  
-        xlabel('Time (sec)','FontName','Arial','FontSize',14);
-    ylabel('Spectral Efficiency (bps/Hz)','FontName','Arial','FontSize',14);
-    legend('mAOS');
-    grid on
+  plot (timeline, SE_mAOS_arr); %+1 timestamp for rerunned value  
+    
+    
     
     
 %     figure
